@@ -1,4 +1,5 @@
 import os
+from multiprocessing import Process
 
 import click
 from constants import TIMEOUT_30MIN
@@ -6,8 +7,38 @@ from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 
 
+def run_action(action, addons, parallel, timeout):
+    jobs = []
+    for values in addons.values():
+        addon_install_func = values["cluster_addon"].__getattribute__(action)
+        _args = [True, timeout]
+        if action == "install_addon":
+            _args.insert(0, values["parameters"])
+
+        if parallel:
+            job = Process(target=addon_install_func, args=tuple(_args))
+            jobs.append(job)
+            job.start()
+        else:
+            addon_install_func(*_args)
+
+    if parallel:
+        for _job in jobs:
+            _job.join()
+
+
 @click.group()
-@click.option("-a", "--addon", help="Addon name to install", required=True)
+@click.option(
+    "-a",
+    "--addons",
+    help="""
+    \b
+    Addons to install.
+    Format to pass is 'addon_name_1,param1=1,param2=2'\b
+    """,
+    required=True,
+    multiple=True,
+)
 @click.option(
     "--timeout",
     help="Timeout in seconds to wait for addon to be installed/uninstalled",
@@ -37,13 +68,21 @@ from ocm_python_wrapper.ocm_client import OCMPythonClient
     type=click.Choice(["stage", "production"]),
     show_default=True,
 )
+@click.option(
+    "-p",
+    "--parallel",
+    help="Run addons install/uninstall in parallel",
+    is_flag=True,
+    show_default=True,
+)
 @click.pass_context
-def addon(ctx, addon, token, api_host, cluster, endpoint, timeout, debug):
+def addon(ctx, addons, token, api_host, cluster, endpoint, timeout, debug, parallel):
     """
-    Command line to Install/Uninstall Addon on OCM managed cluster.
+    Command line to Install/Uninstall Addons on OCM managed cluster.
     """
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
+    ctx.obj["parallel"] = parallel
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
         os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
@@ -54,40 +93,52 @@ def addon(ctx, addon, token, api_host, cluster, endpoint, timeout, debug):
         api_host=api_host,
         discard_unknown_keys=True,
     ).client
-    ctx.obj["cluster_addon"] = ClusterAddOn(
-        client=_client, cluster_name=cluster, addon_name=addon
-    )
+
+    addons_dict = {}
+    for _addon in addons:
+        addon_parameters = []
+        addon_and_params = _addon.split("|")
+        addon_name = addon_and_params[0]
+        addons_dict[addon_name] = {}
+
+        if len(addon_and_params) > 1:
+            parameters = addon_and_params[-1].split(",")
+            parameters = [_param.strip() for _param in parameters]
+            for parameter in parameters:
+                if "=" not in parameter:
+                    click.echo(f"parameters should be id=value, got {parameter}\n")
+                    raise click.Abort()
+
+                _id, _value = parameter.split("=")
+                addon_parameters.append({"id": _id, "value": _value})
+
+        addons_dict[addon_name]["parameters"] = addon_parameters
+        addons_dict[addon_name]["cluster_addon"] = ClusterAddOn(
+            client=_client, cluster_name=cluster, addon_name=addon_name
+        )
+
+    ctx.obj["addons_dict"] = addons_dict
 
 
 @addon.command()
-@click.option(
-    "-p",
-    "--parameters",
-    help="Addon parameters for installation. each parameter pass as id=value. comma separated string",
-)
 @click.pass_context
-def install(ctx, parameters):
-    """Install cluster Addon."""
-    timeout = ctx.obj["timeout"]
-    cluster_addon = ctx.obj["cluster_addon"]
-    _parameters = []
-
-    if parameters:
-        for parameter in parameters.split(","):
-            if "=" not in parameter:
-                click.echo(f"parameters should be id=value, got {parameter}\n")
-                raise click.Abort()
-
-            _id, _value = parameter.split("=")
-            _parameters.append({"id": _id, "value": _value})
-
-    cluster_addon.install_addon(parameters=_parameters, wait_timeout=timeout)
+def install(ctx):
+    """Install cluster Addons."""
+    run_action(
+        action="install_addon",
+        addons=ctx.obj["addons_dict"],
+        parallel=ctx.obj["parallel"],
+        timeout=ctx.obj["timeout"],
+    )
 
 
 @addon.command()
 @click.pass_context
 def uninstall(ctx):
-    """Uninstall cluster Addon."""
-    timeout = ctx.obj["timeout"]
-    cluster_addon = ctx.obj["cluster_addon"]
-    cluster_addon.uninstall_addon(wait_timeout=timeout)
+    """Uninstall cluster Addons."""
+    run_action(
+        action="uninstall_addon",
+        addons=ctx.obj["addons_dict"],
+        parallel=ctx.obj["parallel"],
+        timeout=ctx.obj["timeout"],
+    )

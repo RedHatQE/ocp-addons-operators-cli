@@ -36,25 +36,57 @@ poetry run python app/cli.py --help
 
 
 ### Addons
+
+Each command can be run via container `podman run quay.io/redhat_msi/ocp-addons-operators-cli` or via poetry command `poery run app/cli.py`
+
 #### Install Addon
+##### One addon
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addon \
+    addons \
     -t $OCM_TOKEN \
-    -a ocm-addon-test-operator \
+    -a ocm-addon-test-operator,has-external-resources=false,aws-cluster-test-param=false \
     -c cluster-name \
-    install \
-    -p has-external-resources=false,aws-cluster-test-param=false
+    install
+```
+
+##### Multiple addons
+
+To run multiple addons install in parallel pass -p,--parallel.
+
+```
+podman run quay.io/redhat_msi/ocp-addons-operators-cli \
+    addons \
+    -t $OCM_TOKEN \
+    -a ocm-addon-test-operator|has-external-resources=false,aws-cluster-test-param=false \
+    -a ocm-addon-test-operator-2|has-external-resources=false,aws-cluster-test-param=false \
+    -c cluster-name \
+    install
 ```
 
 #### Uninstall Addon
+##### One addon
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addon \
+    addons \
     -t $OCM_TOKEN \
     -a ocm-addon-test-operator \
+    -c cluster-name \
+    uninstall
+```
+
+##### Multiple addons
+
+To run multiple addons uninstall in parallel pass -p,--parallel.
+
+```
+podman run quay.io/redhat_msi/ocp-addons-operators-cli \
+    addons \
+    -t $OCM_TOKEN \
+    -a ocm-addon-test-operator \
+    -a ocm-addon-test-operator-2 \
     -c cluster-name \
     uninstall
 ```
