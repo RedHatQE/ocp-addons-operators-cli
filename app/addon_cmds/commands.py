@@ -10,15 +10,15 @@ from ocm_python_wrapper.ocm_client import OCMPythonClient
 def run_action(action, addons, parallel, timeout):
     jobs = []
     for values in addons.values():
-        custer_addon_obj = values["cluster_addon"]
-        addon_action_func = getattr(custer_addon_obj, action)
+        cluster_addon_obj = values["cluster_addon"]
+        addon_action_func = getattr(cluster_addon_obj, action)
         _args = [True, timeout]
         if action == "install_addon":
             _args.insert(0, values["parameters"])
 
         if parallel:
             job = multiprocessing.Process(
-                name=f"{custer_addon_obj.addon_name}---{action}",
+                name=f"{cluster_addon_obj.addon_name}---{action}",
                 target=addon_action_func,
                 args=tuple(_args),
             )
