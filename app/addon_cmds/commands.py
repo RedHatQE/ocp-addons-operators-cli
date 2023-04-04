@@ -1,5 +1,5 @@
+import multiprocessing
 import os
-from multiprocessing import Process
 
 import click
 from constants import TIMEOUT_30MIN
@@ -10,20 +10,32 @@ from ocm_python_wrapper.ocm_client import OCMPythonClient
 def run_action(action, addons, parallel, timeout):
     jobs = []
     for values in addons.values():
-        addon_action_func = getattr(values["cluster_addon"], action)
+        custer_addon_obj = values["cluster_addon"]
+        addon_action_func = getattr(custer_addon_obj, action)
         _args = [True, timeout]
         if action == "install_addon":
             _args.insert(0, values["parameters"])
 
         if parallel:
-            job = Process(target=addon_action_func, args=tuple(_args))
+            job = multiprocessing.Process(
+                name=f"{custer_addon_obj.addon_name}---{action}",
+                target=addon_action_func,
+                args=tuple(_args),
+            )
             jobs.append(job)
             job.start()
         else:
             addon_action_func(*_args)
 
+    failed_jobs = {}
     for _job in jobs:
         _job.join()
+        if _job.exitcode != 0:
+            failed_jobs[_job.name] = _job.exitcode
+
+    if failed_jobs:
+        click.echo(f"Some jobs failed to {action}: {failed_jobs}\n")
+        raise click.Abort()
 
 
 @click.group()
