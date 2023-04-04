@@ -46,7 +46,7 @@ Each command can be run via container `podman run quay.io/redhat_msi/ocp-addons-
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     addons \
     -t $OCM_TOKEN \
-    -a ocm-addon-test-operator,has-external-resources=false,aws-cluster-test-param=false \
+    -a ocm-addon-test-operator|has-external-resources=false,aws-cluster-test-param=false \
     -c cluster-name \
     install
 ```
