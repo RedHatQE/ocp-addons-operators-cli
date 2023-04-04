@@ -10,7 +10,7 @@ from ocm_python_wrapper.ocm_client import OCMPythonClient
 def run_action(action, addons, parallel, timeout):
     jobs = []
     for values in addons.values():
-        addon_install_func = values["cluster_addon"].__getattribute__(action)
+        addon_install_func = getattr(values["cluster_addon"], action)
         _args = [True, timeout]
         if action == "install_addon":
             _args.insert(0, values["parameters"])
