@@ -94,7 +94,7 @@ def addon(ctx, addons, token, api_host, cluster, endpoint, timeout, debug, paral
     ).client
 
     addons_dict = {}
-    for _addon in addons:
+    for _addon in [__addon for __addon in addons if __addon]:
         addon_parameters = []
         addon_and_params = _addon.split("|")
         addon_name = addon_and_params[0]
