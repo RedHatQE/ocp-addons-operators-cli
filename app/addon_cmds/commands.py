@@ -22,9 +22,8 @@ def run_action(action, addons, parallel, timeout):
         else:
             addon_action_func(*_args)
 
-    if parallel:
-        for _job in jobs:
-            _job.join()
+    for _job in jobs:
+        _job.join()
 
 
 @click.group()
@@ -34,7 +33,7 @@ def run_action(action, addons, parallel, timeout):
     help="""
     \b
     Addons to install.
-    Format to pass is 'addon_name_1,param1=1,param2=2'\b
+    Format to pass is 'addon_name_1|param1=1,param2=2'\b
     """,
     required=True,
     multiple=True,
