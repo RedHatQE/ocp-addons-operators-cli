@@ -1,3 +1,4 @@
+import ast
 import multiprocessing
 import os
 
@@ -83,7 +84,8 @@ def run_action(action, addons, parallel, timeout):
     "-p",
     "--parallel",
     help="Run addons install/uninstall in parallel",
-    is_flag=True,
+    default="false",
+    type=click.Choice(["true", "false"]),
     show_default=True,
 )
 @click.pass_context
@@ -93,7 +95,7 @@ def addon(ctx, addons, token, api_host, cluster, endpoint, timeout, debug, paral
     """
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
-    ctx.obj["parallel"] = parallel
+    ctx.obj["parallel"] = ast.literal_eval(parallel.capitalize())
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
         os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
