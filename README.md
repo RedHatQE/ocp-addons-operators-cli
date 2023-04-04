@@ -44,7 +44,7 @@ Each command can be run via container `podman run quay.io/redhat_msi/ocp-addons-
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addons \
+    addon \
     -t $OCM_TOKEN \
     -a ocm-addon-test-operator|has-external-resources=false,aws-cluster-test-param=false \
     -c cluster-name \
@@ -57,7 +57,7 @@ To run multiple addons install in parallel pass -p,--parallel.
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addons \
+    addon \
     -t $OCM_TOKEN \
     -a ocm-addon-test-operator|has-external-resources=false,aws-cluster-test-param=false \
     -a ocm-addon-test-operator-2|has-external-resources=false,aws-cluster-test-param=false \
@@ -70,7 +70,7 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addons \
+    addon \
     -t $OCM_TOKEN \
     -a ocm-addon-test-operator \
     -c cluster-name \
@@ -83,7 +83,7 @@ To run multiple addons uninstall in parallel pass -p,--parallel.
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addons \
+    addon \
     -t $OCM_TOKEN \
     -a ocm-addon-test-operator \
     -a ocm-addon-test-operator-2 \
