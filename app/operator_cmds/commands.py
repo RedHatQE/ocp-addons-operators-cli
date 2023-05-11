@@ -27,9 +27,9 @@ def _client(ctx):
     show_default=True,
 )
 @click.option("-n", "--name", help="Operator name to install/uninstall", required=True)
-@click.option("-ns", "--namespace", help="Operator namespace", required=True)
+@click.option("-ns", "--namespace", help="Operator namespace", required=False)
 @click.pass_context
-def operator(ctx, kubeconfig, name, debug, timeout):
+def operator(ctx, kubeconfig, name, debug, timeout, namespace):
     """
     Command line to Install/Uninstall Operator on OCP cluster.
     """
@@ -37,6 +37,7 @@ def operator(ctx, kubeconfig, name, debug, timeout):
     ctx.obj["name"] = name
     ctx.obj["timeout"] = timeout
     ctx.obj["kubeconfig"] = kubeconfig
+    ctx.obj["namespace"] = namespace
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
         os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
@@ -80,7 +81,7 @@ def install(ctx, channel, source, target_namespaces):
         source=source,
         target_namespaces=_target_namespaces,
         timeout=timeout,
-        namespace=namespace,
+        operator_namespace=namespace,
     )
 
 

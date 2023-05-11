@@ -98,7 +98,7 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     operator \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
-    -n servicemesh[README.md](README.md)operator \
+    -n servicemeshoperator \
     install
 ```
 
