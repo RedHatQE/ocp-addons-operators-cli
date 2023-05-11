@@ -27,6 +27,7 @@ def _client(ctx):
     show_default=True,
 )
 @click.option("-n", "--name", help="Operator name to install/uninstall", required=True)
+@click.option("-ns", "--namespace", help="Operator namespace", required=True)
 @click.pass_context
 def operator(ctx, kubeconfig, name, debug, timeout):
     """
@@ -66,6 +67,7 @@ def install(ctx, channel, source, target_namespaces):
     client = _client(ctx=ctx)
     name = ctx.obj["name"]
     timeout = ctx.obj["timeout"]
+    namespace = ctx.obj["namespace"]
 
     _target_namespaces = None
     if target_namespaces:
@@ -78,6 +80,7 @@ def install(ctx, channel, source, target_namespaces):
         source=source,
         target_namespaces=_target_namespaces,
         timeout=timeout,
+        namespace=namespace,
     )
 
 
