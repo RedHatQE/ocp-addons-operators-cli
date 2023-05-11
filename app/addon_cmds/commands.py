@@ -13,9 +13,9 @@ def run_action(action, addons, parallel, timeout):
     for values in addons.values():
         cluster_addon_obj = values["cluster_addon"]
         addon_action_func = getattr(cluster_addon_obj, action)
-        _args = [USE_API_DEFAULTS, WAIT, timeout]
+        _args = [WAIT, timeout]
         if action == "install_addon":
-            _args.insert(0, values["parameters"])
+            _args = [values["parameters"], USE_API_DEFAULTS] + _args
 
         if parallel:
             job = multiprocessing.Process(
