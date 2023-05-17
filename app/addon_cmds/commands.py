@@ -3,19 +3,27 @@ import multiprocessing
 import os
 
 import click
-from constants import TIMEOUT_30MIN, USE_API_DEFAULTS, WAIT
+from constants import TIMEOUT_30MIN
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 
 
-def run_action(action, addons, parallel, timeout):
+def run_action(action, addons, parallel, timeout, brew_token, api_host, rosa):
     jobs = []
     for values in addons.values():
         cluster_addon_obj = values["cluster_addon"]
         addon_action_func = getattr(cluster_addon_obj, action)
-        _args = [WAIT, timeout]
+        _args = [True, timeout, rosa]
         if action == "install_addon":
-            _args = [values["parameters"], USE_API_DEFAULTS] + _args
+            _args.insert(0, values["parameters"])
+            if cluster_addon_obj.addon_name == "managed-odh" and api_host == "stage":
+                if brew_token:
+                    _args.append(brew_token)
+                else:
+                    click.echo(
+                        f"--brew-token flag for {cluster_addon_obj.addon_name} addon install is missing"
+                    )
+                    raise click.Abort()
 
         if parallel:
             job = multiprocessing.Process(
@@ -71,6 +79,16 @@ def run_action(action, addons, parallel, timeout):
     required=True,
     default=os.environ.get("OCM_TOKEN"),
 )
+@click.option(
+    "--brew-token",
+    help="""
+    \b
+    Brew token (only needed when api-host is stage and addon is managed-odh).
+    Default value is taken from environment variable, else will be taken from --brew-token flag.
+    """,
+    required=False,
+    default=os.environ.get("BREW_TOKEN"),
+)
 @click.option("-c", "--cluster", help="Cluster name", required=True)
 @click.option("--debug", help="Enable debug logs", is_flag=True)
 @click.option(
@@ -88,14 +106,36 @@ def run_action(action, addons, parallel, timeout):
     type=click.Choice(["true", "false"]),
     show_default=True,
 )
+@click.option(
+    "--rosa",
+    help="Execute addons installation via ROSA cli",
+    show_default=True,
+    is_flag=True,
+)
 @click.pass_context
-def addon(ctx, addons, token, api_host, cluster, endpoint, timeout, debug, parallel):
+def addon(
+    ctx,
+    addons,
+    token,
+    api_host,
+    cluster,
+    endpoint,
+    timeout,
+    debug,
+    parallel,
+    brew_token,
+    rosa,
+):
     """
     Command line to Install/Uninstall Addons on OCM managed cluster.
     """
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
     ctx.obj["parallel"] = ast.literal_eval(parallel.capitalize())
+    ctx.obj["brew_token"] = brew_token
+    ctx.obj["api_host"] = api_host
+    ctx.obj["rosa"] = rosa
+
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
         os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
@@ -142,6 +182,9 @@ def install(ctx):
         addons=ctx.obj["addons_dict"],
         parallel=ctx.obj["parallel"],
         timeout=ctx.obj["timeout"],
+        brew_token=ctx.obj["brew_token"],
+        api_host=ctx.obj["api_host"],
+        rosa=ctx.obj["rosa"],
     )
 
 
@@ -154,4 +197,5 @@ def uninstall(ctx):
         addons=ctx.obj["addons_dict"],
         parallel=ctx.obj["parallel"],
         timeout=ctx.obj["timeout"],
+        rosa=ctx.obj["rosa"],
     )
