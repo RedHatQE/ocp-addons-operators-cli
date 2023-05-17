@@ -108,7 +108,7 @@ def run_action(action, addons, parallel, timeout, brew_token, api_host, rosa):
 )
 @click.option(
     "--rosa",
-    help="Execute addons installation via ROSA cli",
+    help="Install/uninstall addons via ROSA cli",
     show_default=True,
     is_flag=True,
 )
