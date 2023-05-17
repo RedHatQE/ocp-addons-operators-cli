@@ -8,12 +8,12 @@ from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 
 
-def run_action(action, addons, parallel, timeout, brew_token, api_host):
+def run_action(action, addons, parallel, timeout, brew_token, api_host, rosa):
     jobs = []
     for values in addons.values():
         cluster_addon_obj = values["cluster_addon"]
         addon_action_func = getattr(cluster_addon_obj, action)
-        _args = [True, timeout]
+        _args = [True, timeout, rosa]
         if action == "install_addon":
             _args.insert(0, values["parameters"])
             if cluster_addon_obj.addon_name == "managed-odh" and api_host == "stage":
@@ -106,6 +106,12 @@ def run_action(action, addons, parallel, timeout, brew_token, api_host):
     type=click.Choice(["true", "false"]),
     show_default=True,
 )
+@click.option(
+    "--rosa",
+    help="Execute addons installation via ROSA cli",
+    show_default=True,
+    is_flag=True,
+)
 @click.pass_context
 def addon(
     ctx,
@@ -118,6 +124,7 @@ def addon(
     debug,
     parallel,
     brew_token,
+    rosa,
 ):
     """
     Command line to Install/Uninstall Addons on OCM managed cluster.
@@ -127,6 +134,7 @@ def addon(
     ctx.obj["parallel"] = ast.literal_eval(parallel.capitalize())
     ctx.obj["brew_token"] = brew_token
     ctx.obj["api_host"] = api_host
+    ctx.obj["rosa"] = rosa
 
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
@@ -176,6 +184,7 @@ def install(ctx):
         timeout=ctx.obj["timeout"],
         brew_token=ctx.obj["brew_token"],
         api_host=ctx.obj["api_host"],
+        rosa=ctx.obj["rosa"],
     )
 
 
@@ -188,4 +197,5 @@ def uninstall(ctx):
         addons=ctx.obj["addons_dict"],
         parallel=ctx.obj["parallel"],
         timeout=ctx.obj["timeout"],
+        rosa=ctx.obj["rosa"],
     )
