@@ -8,7 +8,9 @@ from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 
 
-def run_action(action, addons, parallel, timeout, brew_token, api_host, rosa):
+def run_action(
+    action, addons, parallel, timeout, rosa, brew_token=None, api_host="stage"
+):
     jobs = []
     for values in addons.values():
         cluster_addon_obj = values["cluster_addon"]
@@ -83,7 +85,7 @@ def run_action(action, addons, parallel, timeout, brew_token, api_host, rosa):
     "--brew-token",
     help="""
     \b
-    Brew token (only needed when api-host is stage and addon is managed-odh).
+    Brew token (needed to install managed-odh addon in stage).
     Default value is taken from environment variable, else will be taken from --brew-token flag.
     """,
     required=False,
