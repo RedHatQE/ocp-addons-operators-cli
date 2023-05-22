@@ -19,11 +19,15 @@ def run_action(client, action, operators, parallel, timeout):
         install_operator if action == "install_operator" else uninstall_operator
     )
     for operator_name, operator_params in operators.items():
-        kwargs = {"admin_client": client, "name": operator_name, "timeout": timeout}
+        kwargs = {
+            "admin_client": client,
+            "name": operator_name,
+            "timeout": timeout,
+            "operator_namespace": operator_params.get("namespace"),
+        }
         if action == "install_operator":
             kwargs["channel"] = operator_params.get("channel", "stable")
             kwargs["source"] = operator_params.get("source", "redhat-operators")
-            kwargs["operator_namespace"] = operator_params.get("namespace")
             kwargs["target_namespaces"] = (
                 operator_params["target-namespaces"].split("..")
                 if operator_params.get("target-namespaces")
@@ -113,7 +117,9 @@ def operator(ctx, kubeconfig, debug, timeout, operators, parallel):
         operator_and_params = _operator.split("|")
         operator_name = operator_and_params[0]
 
-        if len(operator_and_params) > 1:
+        if len(operator_and_params) == 1:
+            operators_dict[operator_name] = {}
+        else:
             parameters = operator_and_params[-1].split(",")
             parameters = [_param.strip() for _param in parameters]
             for parameter in parameters:
