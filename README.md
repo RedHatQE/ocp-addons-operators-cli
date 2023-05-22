@@ -93,21 +93,49 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
 
 ### Operators
 #### Install Operator
+##### One operator
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     operator \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
-    -n servicemeshoperator \
+    -o 'rhods-operator|namespace=redhat-ods-operator' \
+    install
+```
+
+##### Multiple operator
+
+To run multiple operators install in parallel pass -p,--parallel.
+
+```
+podman run quay.io/redhat_msi/ocp-addons-operators-cli \
+    operator \
+    --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
+    -o 'rhods-operator|namespace=redhat-ods-operator' \
+    -o 'servicemeshoperator' \
     install
 ```
 
 #### Uninstall Operator
+##### One operator
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     operator \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
-    -n servicemeshoperator \
+    -o 'rhods-operator|namespace=redhat-ods-operator' \
+    uninstall
+```
+
+##### Multiple operator
+
+To run multiple operators uninstall in parallel pass -p,--parallel.
+
+```
+podman run quay.io/redhat_msi/ocp-addons-operators-cli \
+    operator \
+    --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
+    -o 'rhods-operator|namespace=redhat-ods-operator' \
+    -o 'servicemeshoperator' \
     uninstall
 ```
