@@ -1,4 +1,3 @@
-import ast
 import multiprocessing
 import os
 
@@ -6,6 +5,7 @@ import click
 from constants import TIMEOUT_30MIN
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
+from utils import extract_operator_addon_params
 
 
 def run_action(
@@ -104,8 +104,7 @@ def run_action(
     "-p",
     "--parallel",
     help="Run addons install/uninstall in parallel",
-    default="false",
-    type=click.Choice(["true", "false"]),
+    is_flag=True,
     show_default=True,
 )
 @click.option(
@@ -133,7 +132,7 @@ def addon(
     """
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
-    ctx.obj["parallel"] = ast.literal_eval(parallel.capitalize())
+    ctx.obj["parallel"] = parallel
     ctx.obj["brew_token"] = brew_token
     ctx.obj["api_host"] = api_host
     ctx.obj["rosa"] = rosa
@@ -150,24 +149,11 @@ def addon(
     ).client
 
     addons_dict = {}
-    for _addon in [__addon for __addon in addons if __addon]:
-        addon_parameters = []
-        addon_and_params = _addon.split("|")
-        addon_name = addon_and_params[0]
-        addons_dict[addon_name] = {}
-
-        if len(addon_and_params) > 1:
-            parameters = addon_and_params[-1].split(",")
-            parameters = [_param.strip() for _param in parameters]
-            for parameter in parameters:
-                if "=" not in parameter:
-                    click.echo(f"parameters should be id=value, got {parameter}\n")
-                    raise click.Abort()
-
-                _id, _value = parameter.split("=")
-                addon_parameters.append({"id": _id, "value": _value})
-
-        addons_dict[addon_name]["parameters"] = addon_parameters
+    for _addon in addons:
+        addon_name, addon_parameters = extract_operator_addon_params(
+            resource_and_parameters=_addon, resource_type="addon"
+        )
+        addons_dict.setdefault(addon_name, {})["parameters"] = addon_parameters
         addons_dict[addon_name]["cluster_addon"] = ClusterAddOn(
             client=_client, cluster_name=cluster, addon_name=addon_name
         )

@@ -1,4 +1,3 @@
-import ast
 import multiprocessing
 import os
 
@@ -6,6 +5,7 @@ import click
 from constants import TIMEOUT_30MIN
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
+from utils import extract_operator_addon_params
 
 
 def _client(ctx):
@@ -78,8 +78,7 @@ def run_action(client, action, operators, parallel, timeout):
     "-p",
     "--parallel",
     help="Run operator install/uninstall in parallel",
-    default="false",
-    type=click.Choice(["true", "false"]),
+    is_flag=True,
     show_default=True,
 )
 @click.option("--debug", help="Enable debug logs", is_flag=True)
@@ -106,30 +105,17 @@ def operator(ctx, kubeconfig, debug, timeout, operators, parallel):
     ctx.obj["operators"] = operators
     ctx.obj["timeout"] = timeout
     ctx.obj["kubeconfig"] = kubeconfig
-    ctx.obj["parallel"] = ast.literal_eval(parallel.capitalize())
+    ctx.obj["parallel"] = parallel
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
         os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
 
     operators_dict = {}
-    for _operator in [__operator for __operator in operators if __operator]:
-        operator_parameters = {}
-        operator_and_params = _operator.split("|")
-        operator_name = operator_and_params[0]
-
-        if len(operator_and_params) == 1:
-            operators_dict[operator_name] = {}
-        else:
-            parameters = operator_and_params[-1].split(",")
-            parameters = [_param.strip() for _param in parameters]
-            for parameter in parameters:
-                if "=" not in parameter:
-                    click.echo(f"parameters should be id=value, got {parameter}\n")
-                    raise click.Abort()
-
-                param_name, param_value = parameter.split("=")
-                operator_parameters[param_name] = param_value
-            operators_dict[operator_name] = operator_parameters
+    for _operator in operators:
+        operator_name, operator_parameters = extract_operator_addon_params(
+            resource_and_parameters=_operator, resource_type="operator"
+        )
+        operators_dict[operator_name] = operator_parameters
 
     ctx.obj["operators_dict"] = operators_dict
 
