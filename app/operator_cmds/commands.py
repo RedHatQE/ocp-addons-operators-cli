@@ -12,7 +12,7 @@ def _client(ctx):
     return get_client(config_file=ctx.obj["kubeconfig"])
 
 
-def run_action(client, action, operators, parallel, timeout):
+def run_action(client, action, operators, parallel, timeout, iib):
     jobs = []
 
     operators_action = (
@@ -28,6 +28,7 @@ def run_action(client, action, operators, parallel, timeout):
         if action == "install_operator":
             kwargs["channel"] = operator_params.get("channel", "stable")
             kwargs["source"] = operator_params.get("source", "redhat-operators")
+            kwargs["iib"] = iib
             kwargs["target_namespaces"] = (
                 operator_params["target-namespaces"].split("..")
                 if operator_params.get("target-namespaces")
@@ -96,8 +97,13 @@ def run_action(client, action, operators, parallel, timeout):
     type=click.Path(exists=True),
     show_default=True,
 )
+@click.option(
+    "--iib",
+    help="Install the operator on the OCP cluster using the IIB",
+    show_default=True,
+)
 @click.pass_context
-def operator(ctx, kubeconfig, debug, timeout, operators, parallel):
+def operator(ctx, kubeconfig, debug, timeout, operators, parallel, iib):
     """
     Command line to Install/Uninstall Operator on OCP cluster.
     """
@@ -106,6 +112,7 @@ def operator(ctx, kubeconfig, debug, timeout, operators, parallel):
     ctx.obj["timeout"] = timeout
     ctx.obj["kubeconfig"] = kubeconfig
     ctx.obj["parallel"] = parallel
+    ctx.obj["iib"] = iib
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
         os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
@@ -130,6 +137,7 @@ def install(ctx):
         operators=ctx.obj["operators_dict"],
         parallel=ctx.obj["parallel"],
         timeout=ctx.obj["timeout"],
+        iib=ctx.obj["iib"],
     )
 
 
