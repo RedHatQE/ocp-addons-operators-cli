@@ -12,7 +12,7 @@ def _client(ctx):
     return get_client(config_file=ctx.obj["kubeconfig"])
 
 
-def run_action(client, action, operators, parallel, timeout, iib):
+def run_action(client, action, operators, parallel, timeout, iib=None):
     jobs = []
 
     operators_action = (
