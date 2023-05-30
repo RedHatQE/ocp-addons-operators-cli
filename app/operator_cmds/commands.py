@@ -28,7 +28,9 @@ def run_action(client, action, operators, parallel, timeout, iib):
         if action == "install_operator":
             kwargs["channel"] = operator_params.get("channel", "stable")
             kwargs["source"] = operator_params.get("source", "redhat-operators")
-            kwargs["iib"] = iib
+            if iib:
+                kwargs["iib"] = iib
+
             kwargs["target_namespaces"] = (
                 operator_params["target-namespaces"].split("..")
                 if operator_params.get("target-namespaces")
