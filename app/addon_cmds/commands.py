@@ -139,7 +139,7 @@ def addon(
     """
     Command line to Install/Uninstall Addons on OCM managed cluster.
     """
-    _rosa = [addon_name.strip() for addon_name in rosa.split(",")] if rosa else []
+    _rosa = rosa.split(",")
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
     ctx.obj["parallel"] = parallel
@@ -169,12 +169,12 @@ def addon(
         )
 
     ctx.obj["addons_dict"] = addons_dict
-    if any(addon_name not in addons_dict.keys() for addon_name in _rosa):
+    if any(addon_name not in addons_dict for addon_name in _rosa):
         click.echo(
             f"""
 An addon indicated with --rosa does not match any of addons names that were given.
 Addons to install/uninstall: {', '.join(addons_dict.keys())}.
-Addons to use with rosa: {', '.join(_rosa)}.
+Addons to use with rosa: {rosa}.
 """
         )
         raise click.Abort()
