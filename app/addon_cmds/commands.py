@@ -116,11 +116,11 @@ def run_action(
     help="""
     \b
     Install/uninstall addons via ROSA cli.
-    Specify addon with addon name.
+    Specify addons with addon names, separated by a comma.
     Example:
-    '-a addon_name_1 -a addon_name_2 --rosa addon_name_2'; Addon_name_2 will be installed with ROSA.
+    '-a addon_1 -a addon_2 -a addon_3 --rosa addon_name_2,addon_name_3';
+    addon_2 and addon_3 will be installed with ROSA.
     """,
-    multiple=True,
 )
 @click.pass_context
 def addon(
@@ -139,12 +139,13 @@ def addon(
     """
     Command line to Install/Uninstall Addons on OCM managed cluster.
     """
+    _rosa = [addon_name.strip() for addon_name in rosa.split(",")] if rosa else []
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
     ctx.obj["parallel"] = parallel
     ctx.obj["brew_token"] = brew_token
     ctx.obj["api_host"] = api_host
-    ctx.obj["rosa"] = rosa
+    ctx.obj["rosa"] = _rosa
 
     if debug:
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
@@ -168,12 +169,12 @@ def addon(
         )
 
     ctx.obj["addons_dict"] = addons_dict
-    if any(addon_name not in addons_dict.keys() for addon_name in rosa):
+    if any(addon_name not in addons_dict.keys() for addon_name in _rosa):
         click.echo(
             f"""
 An addon indicated with --rosa does not match any of addons names that were given.
 Addons to install/uninstall: {', '.join(addons_dict.keys())}.
-Addons to use with rosa: {', '.join(rosa)}.
+Addons to use with rosa: {', '.join(_rosa)}.
 """
         )
         raise click.Abort()
