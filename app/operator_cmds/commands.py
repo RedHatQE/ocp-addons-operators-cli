@@ -61,7 +61,7 @@ def run_action(client, action, operators_tuple, parallel, timeout):
     "--operator",
     type=DictParamType(),
     help="""
-    \b
+\b
 Operator to install.
 Format to pass is:
     'name=operator1;namespace=operator1_namespace; channel=stable;target-namespaces=ns1,ns2;iib=/path/to/iib:123456;'

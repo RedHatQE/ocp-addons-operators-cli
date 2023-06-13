@@ -7,7 +7,28 @@ from constants import TIMEOUT_30MIN
 from ocm_python_client.exceptions import NotFoundException
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
-from utils import extract_addon_params, set_debug_os_flags
+from utils import set_debug_os_flags
+
+
+def extract_addon_params(addon_dict):
+    """
+    Extract addon parameters from user input
+
+    Args:
+        addon_dict (dict): dict constructed from addon user input
+
+    Returns:
+        list: list of addon parameters dicts
+
+    """
+    exclude_list = ["name", "timeout", "rosa"]
+    resource_parameters = []
+
+    for key, value in addon_dict.items():
+        if key not in exclude_list:
+            resource_parameters.append({"id": key, "value": value})
+
+    return resource_parameters
 
 
 def run_action(action, addons_tuple, parallel, brew_token=None, api_host="stage"):
@@ -18,7 +39,7 @@ def run_action(action, addons_tuple, parallel, brew_token=None, api_host="stage"
         kwargs = {
             "wait": True,
             "wait_timeout": _addon.get("timeout", TIMEOUT_30MIN),
-            "rosa": _addon.get("rosa"),
+            "rosa": bool(_addon.get("rosa")),
         }
         if action == "install_addon":
             kwargs["parameters"] = _addon["parameters"]
@@ -59,7 +80,7 @@ def run_action(action, addons_tuple, parallel, brew_token=None, api_host="stage"
     "--addon",
     type=DictParamType(),
     help="""
-    \b
+\b
 Addon to install.
 Format to pass is:
     'name=addon1;param1=1;param2=2;rosa=true;timeout=60'
@@ -119,7 +140,6 @@ def addons(
     api_host,
     cluster,
     endpoint,
-    timeout,
     debug,
     parallel,
     brew_token,
@@ -128,7 +148,6 @@ def addons(
     Command line to Install/Uninstall Addons on OCM managed cluster.
     """
     ctx.ensure_object(dict)
-    ctx.obj["timeout"] = timeout
     ctx.obj["parallel"] = parallel
     ctx.obj["brew_token"] = brew_token
     ctx.obj["api_host"] = api_host
