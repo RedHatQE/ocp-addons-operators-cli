@@ -5,7 +5,7 @@ import click
 from constants import TIMEOUT_30MIN
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
-from utils import extract_operator_addon_params
+from utils import extract_operator_addon_params, set_debug_os_flags
 
 
 def _client(ctx):
@@ -116,8 +116,7 @@ def operator(ctx, kubeconfig, debug, timeout, operators, parallel, iib):
     ctx.obj["parallel"] = parallel
     ctx.obj["iib"] = iib
     if debug:
-        os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
-        os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
+        set_debug_os_flags()
 
     operators_dict = {}
     for _operator in operators:

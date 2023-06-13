@@ -1,3 +1,5 @@
+import os
+
 import click
 
 
@@ -42,3 +44,8 @@ def extract_operator_addon_params(resource_and_parameters, resource_type):
             elif resource_type == "operator":
                 resource_parameters[param_name] = param_value
     return resource_name, resource_parameters
+
+
+def set_debug_os_flags():
+    os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
+    os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
