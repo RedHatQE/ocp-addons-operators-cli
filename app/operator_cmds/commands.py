@@ -13,7 +13,7 @@ def _client(ctx):
     return get_client(config_file=ctx.obj["kubeconfig"])
 
 
-def run_action(client, action, operators_tuple, parallel, timeout):
+def run_action(client, action, operators_tuple, parallel):
     jobs = []
 
     operators_action = (
@@ -24,7 +24,7 @@ def run_action(client, action, operators_tuple, parallel, timeout):
         kwargs = {
             "admin_client": client,
             "name": operator_name,
-            "timeout": timeout,
+            "timeout": _operator.get("timeout", TIMEOUT_30MIN),
             "operator_namespace": _operator.get("namespace"),
         }
         if action == "install_operator":
@@ -64,7 +64,7 @@ def run_action(client, action, operators_tuple, parallel, timeout):
 \b
 Operator to install.
 Format to pass is:
-    'name=operator1;namespace=operator1_namespace; channel=stable;target-namespaces=ns1,ns2;iib=/path/to/iib:123456;'
+    'name=operator1;namespace=operator1_namespace; channel=stable;target-namespaces=ns1,ns2;iib=/path/to/iib:123456'
 Optional parameters:
     namespace - Operator namespace
     channel - Operator channel to install from, default: 'stable'
@@ -84,12 +84,6 @@ Optional parameters:
 )
 @click.option("--debug", help="Enable debug logs", is_flag=True)
 @click.option(
-    "--timeout",
-    help="Timeout in seconds to wait for operator to be installed/uninstalled",
-    default=TIMEOUT_30MIN,
-    show_default=True,
-)
-@click.option(
     "--kubeconfig",
     help="Path to kubeconfig file",
     required=True,
@@ -98,13 +92,12 @@ Optional parameters:
     show_default=True,
 )
 @click.pass_context
-def operators(ctx, kubeconfig, debug, timeout, operator, parallel):
+def operators(ctx, kubeconfig, debug, operator, parallel):
     """
     Command line to Install/Uninstall Operator on OCP cluster.
     """
     ctx.ensure_object(dict)
     ctx.obj["operators_tuple"] = operator
-    ctx.obj["timeout"] = timeout
     ctx.obj["kubeconfig"] = kubeconfig
     ctx.obj["parallel"] = parallel
     if debug:
@@ -120,7 +113,6 @@ def install(ctx):
         action="install_operator",
         operators_tuple=ctx.obj["operators_tuple"],
         parallel=ctx.obj["parallel"],
-        timeout=ctx.obj["timeout"],
     )
 
 
@@ -133,5 +125,4 @@ def uninstall(ctx):
         action="uninstall_operator",
         operators_tuple=ctx.obj["operators_tuple"],
         parallel=ctx.obj["parallel"],
-        timeout=ctx.obj["timeout"],
     )

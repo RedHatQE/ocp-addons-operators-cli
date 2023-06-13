@@ -9,12 +9,12 @@ To pull the image: `podman pull quay.io/redhat_msi/ocp-addons-operators-cli`
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli --help
-podman run quay.io/redhat_msi/ocp-addons-operators-cli addon --help
-podman run quay.io/redhat_msi/ocp-addons-operators-cli addon install --help
-podman run quay.io/redhat_msi/ocp-addons-operators-cli addon uninstall --help
-podman run quay.io/redhat_msi/ocp-addons-operators-cli operator --help
-podman run quay.io/redhat_msi/ocp-addons-operators-cli operator install --help
-podman run quay.io/redhat_msi/ocp-addons-operators-cli operator uninstall --help
+podman run quay.io/redhat_msi/ocp-addons-operators-cli addons --help
+podman run quay.io/redhat_msi/ocp-addons-operators-cli addons install --help
+podman run quay.io/redhat_msi/ocp-addons-operators-cli addons uninstall --help
+podman run quay.io/redhat_msi/ocp-addons-operators-cli operators --help
+podman run quay.io/redhat_msi/ocp-addons-operators-cli operators install --help
+podman run quay.io/redhat_msi/ocp-addons-operators-cli operators uninstall --help
 ```
 
 ### Local run
@@ -39,6 +39,20 @@ poetry run python app/cli.py --help
 
 Each command can be run via container `podman run quay.io/redhat_msi/ocp-addons-operators-cli` or via poetry command `poetry run app/cli.py`
 
+### Addon/Operator user args
+
+Each `--addon` or `operator` accept args, the format is `arg=value;`
+###### Common args:
+* `name=name`: Name of the operator/addon to install/uninstall
+* `timeout=300`: timeout to wait for the operator/addon to be installed/uninstalled
+
+###### Addon args:
+* `rosa=true`: Use rosa cli to install/uninstall the addon
+
+###### Operator args:
+* `iib=/path/to/iib:123456`: Install the operator using the provided IIB
+
+
 #### Install Addon
 ##### One addon
 
@@ -46,7 +60,7 @@ Each command can be run via container `podman run quay.io/redhat_msi/ocp-addons-
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     addon \
     -t $OCM_TOKEN \
-    -a ocm-addon-test-operator|has-external-resources=false,aws-cluster-test-param=false \
+    -a 'name=ocm-addon-test-operator;has-external-resources=false;aws-cluster-test-param=false;timeout=600' \
     -c cluster-name \
     install
 ```
@@ -57,10 +71,10 @@ To run multiple addons install in parallel pass -p,--parallel.
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addon \
+    addons \
     -t $OCM_TOKEN \
-    -a ocm-addon-test-operator|has-external-resources=false,aws-cluster-test-param=false \
-    -a ocm-addon-test-operator-2|has-external-resources=false,aws-cluster-test-param=false \
+    -a 'name=ocm-addon-test-operator;has-external-resources=false;aws-cluster-test-param=false;timeout=600' \
+    -a 'name=ocm-addon-test-operator-2;has-external-resources=false;aws-cluster-test-param=false;timeout=600' \
     -c cluster-name \
     install
 ```
@@ -70,9 +84,9 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addon \
+    addons \
     -t $OCM_TOKEN \
-    -a ocm-addon-test-operator \
+    -a 'name=ocm-addon-test-operator' \
     -c cluster-name \
     uninstall
 ```
@@ -83,27 +97,23 @@ To run multiple addons uninstall in parallel pass -p,--parallel.
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addon \
+    addons \
     -t $OCM_TOKEN \
-    -a ocm-addon-test-operator \
-    -a ocm-addon-test-operator-2 \
+    -a 'name=ocm-addon-test-operator' \
+    -a 'name=ocm-addon-test-operator-2' \
     -c cluster-name \
     uninstall
 ```
 
 #### ROSA cli
-Use --rosa addon_name to specify which addon to install/uninstall with ROSA cli.
-Specify addons with addon names, separated by a comma.
+Pass 'rosa=true' in the addon `-a` arg.
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     addon \
     -t $OCM_TOKEN \
-    -a ocm-addon-test-operator-1 \
-    -a ocm-addon-test-operator-2 \
-    -a ocm-addon-test-operator-3 \
+    -a 'name=ocm-addon-test-operator;has-external-resources=false;aws-cluster-test-param=false;rosa=true;timeout=600'
     -c cluster-name \
-    --rosa ocm-addon-test-operator-1,ocm-addon-test-operator-3 \
     install
 ```
 Only addons `ocm-addon-test-operator-1` and `ocm-addon-test-operator-3` will be installed with ROSA cli.
@@ -114,9 +124,9 @@ Only addons `ocm-addon-test-operator-1` and `ocm-addon-test-operator-3` will be 
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    operator \
+    operators \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
-    -o 'rhods-operator|namespace=redhat-ods-operator' \
+    -o 'name=rhods-operator;namespace=redhat-ods-operator' \
     install
 ```
 
@@ -126,10 +136,20 @@ To run multiple operators install in parallel pass -p,--parallel.
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    operator \
+    operators \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
-    -o 'rhods-operator|namespace=redhat-ods-operator' \
-    -o 'servicemeshoperator' \
+    -o 'name=rhods-operator;namespace=redhat-ods-operator' \
+    -o 'name=servicemeshoperator' \
+    install
+```
+
+##### Install operator using IIB (ndex-image)
+
+```
+podman run quay.io/redhat_msi/ocp-addons-operators-cli \
+    operators \
+    --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
+    -o 'name=rhods-operator;namespace=redhat-ods-operator;iib=/path/to/iib:123456' \
     install
 ```
 
@@ -138,9 +158,9 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    operator \
+    operators \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
-    -o 'rhods-operator|namespace=redhat-ods-operator' \
+    -o 'name=servicemeshoperator'
     uninstall
 ```
 
@@ -150,9 +170,9 @@ To run multiple operators uninstall in parallel pass -p,--parallel.
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    operator \
+    operators \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
-    -o 'rhods-operator|namespace=redhat-ods-operator' \
-    -o 'servicemeshoperator' \
+    -o 'name=rhods-operator;namespace=redhat-ods-operator' \
+    -o 'name=servicemeshoperator' \
     uninstall
 ```

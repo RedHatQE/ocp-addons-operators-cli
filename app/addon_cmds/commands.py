@@ -21,12 +21,14 @@ def extract_addon_params(addon_dict):
         list: list of addon parameters dicts
 
     """
-    exclude_list = ["name", "timeout", "rosa"]
+    exclude_list = ["cluster_addon", "name", "timeout", "rosa"]
     resource_parameters = []
 
     for key, value in addon_dict.items():
-        if key not in exclude_list:
-            resource_parameters.append({"id": key, "value": value})
+        if key in exclude_list:
+            continue
+
+        resource_parameters.append({"id": key, "value": value})
 
     return resource_parameters
 
@@ -172,7 +174,7 @@ def addons(
             click.echo(f"{exc}")
             raise click.Abort()
 
-        _addon["parameter"] = extract_addon_params(addon_dict=_addon)
+        _addon["parameters"] = extract_addon_params(addon_dict=_addon)
 
     ctx.obj["addons_tuple"] = addon_tuple
 
