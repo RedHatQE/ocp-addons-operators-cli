@@ -3,6 +3,7 @@ import os
 
 import click
 from constants import TIMEOUT_30MIN
+from ocm_python_client.exceptions import NotFoundException
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 from utils import extract_operator_addon_params
@@ -151,24 +152,16 @@ def addon(
         os.environ["OCM_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
         os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
 
-    _client = OCMPythonClient(
-        token=token,
-        endpoint=endpoint,
-        api_host=api_host,
-        discard_unknown_keys=True,
-    ).client
-
     addons_dict = {}
     for _addon in addons:
         addon_name, addon_parameters = extract_operator_addon_params(
             resource_and_parameters=_addon, resource_type="addon"
         )
+        if addon_name in addons_dict:
+            click.echo(f"Addon {addon_name} has declared more than once.")
+            raise click.Abort()
         addons_dict.setdefault(addon_name, {})["parameters"] = addon_parameters
-        addons_dict[addon_name]["cluster_addon"] = ClusterAddOn(
-            client=_client, cluster_name=cluster, addon_name=addon_name
-        )
 
-    ctx.obj["addons_dict"] = addons_dict
     if any(addon_name not in addons_dict for addon_name in _rosa):
         click.echo(
             f"""
@@ -178,6 +171,23 @@ Addons to use with rosa: {rosa}.
 """
         )
         raise click.Abort()
+
+    _client = OCMPythonClient(
+        token=token,
+        endpoint=endpoint,
+        api_host=api_host,
+        discard_unknown_keys=True,
+    ).client
+
+    for addon_name in addons_dict:
+        try:
+            addons_dict[addon_name]["cluster_addon"] = ClusterAddOn(
+                client=_client, cluster_name=cluster, addon_name=addon_name
+            )
+        except NotFoundException as exc:
+            click.echo(f"{exc}")
+            raise click.Abort()
+    ctx.obj["addons_dict"] = addons_dict
 
 
 @addon.command()
