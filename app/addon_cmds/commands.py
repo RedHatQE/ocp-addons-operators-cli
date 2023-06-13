@@ -140,7 +140,7 @@ def addon(
     """
     Command line to Install/Uninstall Addons on OCM managed cluster.
     """
-    _rosa = rosa.split(",")
+    _rosa = rosa.split(",") if rosa else []
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
     ctx.obj["parallel"] = parallel
