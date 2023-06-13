@@ -3,6 +3,7 @@ import os
 
 import click
 from constants import TIMEOUT_30MIN
+from ocm_python_client.exceptions import NotFoundException
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 from utils import extract_operator_addon_params, set_debug_os_flags
@@ -116,11 +117,11 @@ def run_action(
     help="""
     \b
     Install/uninstall addons via ROSA cli.
-    Specify addon with addon name.
+    Specify addons with addon names, separated by a comma.
     Example:
-    '-a addon_name_1 -a addon_name_2 --rosa addon_name_2'; Addon_name_2 will be installed with ROSA.
+    '-a addon_1 -a addon_2 -a addon_3 --rosa addon_name_2,addon_name_3';
+    addon_2 and addon_3 will be installed with ROSA.
     """,
-    multiple=True,
 )
 @click.pass_context
 def addon(
@@ -139,15 +140,36 @@ def addon(
     """
     Command line to Install/Uninstall Addons on OCM managed cluster.
     """
+    _rosa = [addon_name.strip() for addon_name in rosa.split(",")] if rosa else []
     ctx.ensure_object(dict)
     ctx.obj["timeout"] = timeout
     ctx.obj["parallel"] = parallel
     ctx.obj["brew_token"] = brew_token
     ctx.obj["api_host"] = api_host
-    ctx.obj["rosa"] = rosa
+    ctx.obj["rosa"] = _rosa
 
     if debug:
         set_debug_os_flags()
+
+    addons_dict = {}
+    for _addon in addons:
+        addon_name, addon_parameters = extract_operator_addon_params(
+            resource_and_parameters=_addon, resource_type="addon"
+        )
+        if addon_name in addons_dict:
+            click.echo(f"Addon {addon_name} has declared more than once.")
+            raise click.Abort()
+        addons_dict.setdefault(addon_name, {})["parameters"] = addon_parameters
+
+    if any(addon_name not in addons_dict for addon_name in _rosa):
+        click.echo(
+            f"""
+An addon indicated with --rosa does not match any of addons names that were given.
+Addons to install/uninstall: {', '.join(addons_dict.keys())}.
+Addons to use with rosa: {rosa}.
+"""
+        )
+        raise click.Abort()
 
     _client = OCMPythonClient(
         token=token,
@@ -156,26 +178,15 @@ def addon(
         discard_unknown_keys=True,
     ).client
 
-    addons_dict = {}
-    for _addon in addons:
-        addon_name, addon_parameters = extract_operator_addon_params(
-            resource_and_parameters=_addon, resource_type="addon"
-        )
-        addons_dict.setdefault(addon_name, {})["parameters"] = addon_parameters
-        addons_dict[addon_name]["cluster_addon"] = ClusterAddOn(
-            client=_client, cluster_name=cluster, addon_name=addon_name
-        )
-
+    for addon_name in addons_dict:
+        try:
+            addons_dict[addon_name]["cluster_addon"] = ClusterAddOn(
+                client=_client, cluster_name=cluster, addon_name=addon_name
+            )
+        except NotFoundException as exc:
+            click.echo(f"{exc}")
+            raise click.Abort()
     ctx.obj["addons_dict"] = addons_dict
-    if any(addon_name not in addons_dict.keys() for addon_name in rosa):
-        click.echo(
-            f"""
-An addon indicated with --rosa does not match any of addons names that were given.
-Addons to install/uninstall: {', '.join(addons_dict.keys())}.
-Addons to use with rosa: {', '.join(rosa)}.
-"""
-        )
-        raise click.Abort()
 
 
 @addon.command()
