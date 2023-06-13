@@ -2,40 +2,36 @@ import multiprocessing
 import os
 
 import click
+from click_dict_type import DictParamType
 from constants import TIMEOUT_30MIN
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
-from utils import extract_operator_addon_params, set_debug_os_flags
+from utils import set_debug_os_flags
 
 
 def _client(ctx):
     return get_client(config_file=ctx.obj["kubeconfig"])
 
 
-def run_action(client, action, operators, parallel, timeout, iib=None):
+def run_action(client, action, operators_tuple, parallel, timeout):
     jobs = []
 
     operators_action = (
         install_operator if action == "install_operator" else uninstall_operator
     )
-    for operator_name, operator_params in operators.items():
+    for _operator in operators_tuple:
+        operator_name = _operator["name"]
         kwargs = {
             "admin_client": client,
             "name": operator_name,
             "timeout": timeout,
-            "operator_namespace": operator_params.get("namespace"),
+            "operator_namespace": _operator.get("namespace"),
         }
         if action == "install_operator":
-            kwargs["channel"] = operator_params.get("channel", "stable")
-            kwargs["source"] = operator_params.get("source", "redhat-operators")
-            if iib:
-                kwargs["iib"] = iib
-
-            kwargs["target_namespaces"] = (
-                operator_params["target-namespaces"].split("..")
-                if operator_params.get("target-namespaces")
-                else None
-            )
+            kwargs["channel"] = _operator.get("channel", "stable")
+            kwargs["source"] = _operator.get("source", "redhat-operators")
+            kwargs["iib"] = _operator.get("iib")
+            kwargs["target_namespaces"] = _operator.get("target-namespaces")
 
         if parallel:
             job = multiprocessing.Process(
@@ -62,17 +58,19 @@ def run_action(client, action, operators, parallel, timeout, iib=None):
 @click.group()
 @click.option(
     "-o",
-    "--operators",
+    "--operator",
+    type=DictParamType(),
     help="""
     \b
-    Operators to install.
-    Format to pass is 'operators_name_1|param1=1,param2=2'
-    Optional parameters:
-        namespace - Operator namespace
-        channel - Operator channel to install from, default: 'stable'
-        source - Operator source, default: 'redhat-operators'
-        target-namespaces - A double-dotter string with target namespaces for the operator, example: ns1..ns2
-    \b
+Operator to install.
+Format to pass is:
+    'name=operator1;namespace=operator1_namespace; channel=stable;target-namespaces=ns1,ns2;iib=/path/to/iib:123456;'
+Optional parameters:
+    namespace - Operator namespace
+    channel - Operator channel to install from, default: 'stable'
+    source - Operator source, default: 'redhat-operators'
+    target-namespaces - A list of target namespaces for the operator
+    iib - To install an operator using custom iib
     """,
     required=True,
     multiple=True,
@@ -99,57 +97,41 @@ def run_action(client, action, operators, parallel, timeout, iib=None):
     type=click.Path(exists=True),
     show_default=True,
 )
-@click.option(
-    "--iib",
-    help="Install the operator on the OCP cluster using the IIB",
-    show_default=True,
-)
 @click.pass_context
-def operator(ctx, kubeconfig, debug, timeout, operators, parallel, iib):
+def operators(ctx, kubeconfig, debug, timeout, operator, parallel):
     """
     Command line to Install/Uninstall Operator on OCP cluster.
     """
     ctx.ensure_object(dict)
-    ctx.obj["operators"] = operators
+    ctx.obj["operators_tuple"] = operator
     ctx.obj["timeout"] = timeout
     ctx.obj["kubeconfig"] = kubeconfig
     ctx.obj["parallel"] = parallel
-    ctx.obj["iib"] = iib
     if debug:
         set_debug_os_flags()
 
-    operators_dict = {}
-    for _operator in operators:
-        operator_name, operator_parameters = extract_operator_addon_params(
-            resource_and_parameters=_operator, resource_type="operator"
-        )
-        operators_dict[operator_name] = operator_parameters
 
-    ctx.obj["operators_dict"] = operators_dict
-
-
-@operator.command()
+@operators.command()
 @click.pass_context
 def install(ctx):
     """Install cluster Operator."""
     run_action(
         client=_client(ctx=ctx),
         action="install_operator",
-        operators=ctx.obj["operators_dict"],
+        operators_tuple=ctx.obj["operators_tuple"],
         parallel=ctx.obj["parallel"],
         timeout=ctx.obj["timeout"],
-        iib=ctx.obj["iib"],
     )
 
 
-@operator.command()
+@operators.command()
 @click.pass_context
 def uninstall(ctx):
     """Uninstall cluster Operator."""
     run_action(
         client=_client(ctx=ctx),
         action="uninstall_operator",
-        operators=ctx.obj["operators_dict"],
+        operators_tuple=ctx.obj["operators_tuple"],
         parallel=ctx.obj["parallel"],
         timeout=ctx.obj["timeout"],
     )

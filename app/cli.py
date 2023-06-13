@@ -1,8 +1,8 @@
 import sys
 
 import click
-from addon_cmds import commands as addon
-from operator_cmds import commands as operator
+from addon_cmds import commands as addons
+from operator_cmds import commands as operators
 
 
 @click.group()
@@ -21,18 +21,18 @@ def entry_point():
 
 
 def main():
-    entry_point.add_command(addon.addon)
-    entry_point.add_command(operator.operator)
+    entry_point.add_command(addons.addons)
+    entry_point.add_command(operators.operators)
     click.echo(f"Click Version: {click.__version__}")
     click.echo(f"Python Version: {sys.version}")
     _commands = {
-        "addon": {
-            "install": addon.install,
-            "uninstall": addon.uninstall,
+        "addons": {
+            "install": addons.install,
+            "uninstall": addons.uninstall,
         },
-        "operator": {
-            "install": operator.install,
-            "uninstall": operator.uninstall,
+        "operators": {
+            "install": operators.install,
+            "uninstall": operators.uninstall,
         },
     }
     user_args = sys.argv
