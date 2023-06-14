@@ -13,7 +13,7 @@ def _client(ctx):
     return get_client(config_file=ctx.obj["kubeconfig"])
 
 
-def run_action(client, action, operators_tuple, parallel):
+def run_action(client, action, operators_tuple, parallel, brew_token=None):
     jobs = []
 
     operators_action = (
@@ -27,10 +27,13 @@ def run_action(client, action, operators_tuple, parallel):
             "timeout": _operator.get("timeout", TIMEOUT_30MIN),
             "operator_namespace": _operator.get("namespace"),
         }
+        if brew_token:
+            kwargs["brew_token"] = brew_token
+
         if action == "install_operator":
             kwargs["channel"] = _operator.get("channel", "stable")
             kwargs["source"] = _operator.get("source", "redhat-operators")
-            kwargs["iib"] = _operator.get("iib")
+            kwargs["iib_index_image"] = _operator.get("iib")
             kwargs["target_namespaces"] = _operator.get("target-namespaces")
 
         if parallel:
@@ -91,8 +94,18 @@ Optional parameters:
     type=click.Path(exists=True),
     show_default=True,
 )
+@click.option(
+    "--brew-token",
+    help="""
+    \b
+    Brew token (needed to install operator using IIB).
+    Default value is taken from environment variable, else will be taken from --brew-token flag.
+    """,
+    required=False,
+    default=os.environ.get("BREW_TOKEN"),
+)
 @click.pass_context
-def operators(ctx, kubeconfig, debug, operator, parallel):
+def operators(ctx, kubeconfig, debug, operator, parallel, brew_token):
     """
     Command line to Install/Uninstall Operator on OCP cluster.
     """
@@ -100,6 +113,7 @@ def operators(ctx, kubeconfig, debug, operator, parallel):
     ctx.obj["operators_tuple"] = operator
     ctx.obj["kubeconfig"] = kubeconfig
     ctx.obj["parallel"] = parallel
+    ctx.obj["brew_token"] = brew_token
     if debug:
         set_debug_os_flags()
 
@@ -113,6 +127,7 @@ def install(ctx):
         action="install_operator",
         operators_tuple=ctx.obj["operators_tuple"],
         parallel=ctx.obj["parallel"],
+        brew_token=ctx.obj["brew_token"],
     )
 
 

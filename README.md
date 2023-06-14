@@ -149,6 +149,7 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     operators \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
+    --brew-token token \
     -o 'name=rhods-operator;namespace=redhat-ods-operator;iib=/path/to/iib:123456' \
     install
 ```
