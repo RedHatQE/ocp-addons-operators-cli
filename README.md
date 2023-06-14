@@ -51,6 +51,8 @@ Each `--addon` or `operator` accept args, the format is `arg=value;`
 
 ###### Operator args:
 * `iib=/path/to/iib:123456`: Install the operator using the provided IIB
+* `channel=stable`: Operator channel to install from, default: 'stable'
+* `source=redhat-operators`: Operator source, default: 'redhat-operators'
 
 
 #### Install Addon
@@ -58,7 +60,7 @@ Each `--addon` or `operator` accept args, the format is `arg=value;`
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli \
-    addon \
+    addons \
     -t $OCM_TOKEN \
     -a 'name=ocm-addon-test-operator;has-external-resources=false;aws-cluster-test-param=false;timeout=600' \
     -c cluster-name \
