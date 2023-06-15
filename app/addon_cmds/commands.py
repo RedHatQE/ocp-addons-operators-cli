@@ -2,27 +2,49 @@ import multiprocessing
 import os
 
 import click
+from click_dict_type import DictParamType
 from constants import TIMEOUT_30MIN
 from ocm_python_client.exceptions import NotFoundException
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
-from utils import extract_operator_addon_params, set_debug_os_flags
+from utils import set_debug_os_flags
 
 
-def run_action(
-    action, addons, parallel, timeout, rosa, brew_token=None, api_host="stage"
-):
+def extract_addon_params(addon_dict):
+    """
+    Extract addon parameters from user input
+
+    Args:
+        addon_dict (dict): dict constructed from addon user input
+
+    Returns:
+        list: list of addon parameters dicts
+
+    """
+    exclude_list = ["cluster_addon", "name", "timeout", "rosa"]
+    resource_parameters = []
+
+    for key, value in addon_dict.items():
+        if key in exclude_list:
+            continue
+
+        resource_parameters.append({"id": key, "value": value})
+
+    return resource_parameters
+
+
+def run_action(action, addons_tuple, parallel, brew_token=None, api_host="stage"):
     jobs = []
-    for values in addons.values():
-        cluster_addon_obj = values["cluster_addon"]
+    for _addon in addons_tuple:
+        cluster_addon_obj = _addon["cluster_addon"]
         addon_action_func = getattr(cluster_addon_obj, action)
         kwargs = {
             "wait": True,
-            "wait_timeout": timeout,
-            "rosa": cluster_addon_obj.addon_name in rosa,
+            "wait_timeout": _addon.get("timeout", TIMEOUT_30MIN),
+            "rosa": bool(_addon.get("rosa")),
         }
         if action == "install_addon":
-            kwargs["parameters"] = values["parameters"]
+            kwargs["parameters"] = _addon["parameters"]
             if cluster_addon_obj.addon_name == "managed-odh" and api_host == "stage":
                 if brew_token:
                     kwargs["brew_token"] = brew_token
@@ -57,20 +79,20 @@ def run_action(
 @click.group()
 @click.option(
     "-a",
-    "--addons",
+    "--addon",
+    type=DictParamType(),
     help="""
-    \b
-    Addons to install.
-    Format to pass is 'addon_name_1|param1=1,param2=2'
+\b
+Addon to install.
+Format to pass is:
+    'name=addon1;param1=1;param2=2;rosa=true;timeout=60'
+Optional parameters:
+    addon parameters - needed parameters for addon installation.
+    timeout - addon install / uninstall timeout in seconds, default: 30 minutes.
+    rosa - if true, then it will be installed using ROSA cli.
     """,
     required=True,
     multiple=True,
-)
-@click.option(
-    "--timeout",
-    help="Timeout in seconds to wait for addon to be installed/uninstalled",
-    default=TIMEOUT_30MIN,
-    show_default=True,
 )
 @click.option(
     "-e",
@@ -112,64 +134,28 @@ def run_action(
     is_flag=True,
     show_default=True,
 )
-@click.option(
-    "--rosa",
-    help="""
-    \b
-    Install/uninstall addons via ROSA cli.
-    Specify addons with addon names, separated by a comma.
-    Example:
-    '-a addon_1 -a addon_2 -a addon_3 --rosa addon_name_2,addon_name_3';
-    addon_2 and addon_3 will be installed with ROSA.
-    """,
-)
 @click.pass_context
-def addon(
+def addons(
     ctx,
-    addons,
+    addon,
     token,
     api_host,
     cluster,
     endpoint,
-    timeout,
     debug,
     parallel,
     brew_token,
-    rosa,
 ):
     """
     Command line to Install/Uninstall Addons on OCM managed cluster.
     """
-    _rosa = [addon_name.strip() for addon_name in rosa.split(",")] if rosa else []
     ctx.ensure_object(dict)
-    ctx.obj["timeout"] = timeout
     ctx.obj["parallel"] = parallel
     ctx.obj["brew_token"] = brew_token
     ctx.obj["api_host"] = api_host
-    ctx.obj["rosa"] = _rosa
 
     if debug:
         set_debug_os_flags()
-
-    addons_dict = {}
-    for _addon in addons:
-        addon_name, addon_parameters = extract_operator_addon_params(
-            resource_and_parameters=_addon, resource_type="addon"
-        )
-        if addon_name in addons_dict:
-            click.echo(f"Addon {addon_name} has declared more than once.")
-            raise click.Abort()
-        addons_dict.setdefault(addon_name, {})["parameters"] = addon_parameters
-
-    if any(addon_name not in addons_dict for addon_name in _rosa):
-        click.echo(
-            f"""
-An addon indicated with --rosa does not match any of addons names that were given.
-Addons to install/uninstall: {', '.join(addons_dict.keys())}.
-Addons to use with rosa: {rosa}.
-"""
-        )
-        raise click.Abort()
 
     _client = OCMPythonClient(
         token=token,
@@ -178,40 +164,40 @@ Addons to use with rosa: {rosa}.
         discard_unknown_keys=True,
     ).client
 
-    for addon_name in addons_dict:
+    addon_tuple = addon
+    for _addon in addon_tuple:
         try:
-            addons_dict[addon_name]["cluster_addon"] = ClusterAddOn(
-                client=_client, cluster_name=cluster, addon_name=addon_name
+            _addon["cluster_addon"] = ClusterAddOn(
+                client=_client, cluster_name=cluster, addon_name=_addon["name"]
             )
         except NotFoundException as exc:
             click.echo(f"{exc}")
             raise click.Abort()
-    ctx.obj["addons_dict"] = addons_dict
+
+        _addon["parameters"] = extract_addon_params(addon_dict=_addon)
+
+    ctx.obj["addons_tuple"] = addon_tuple
 
 
-@addon.command()
+@addons.command()
 @click.pass_context
 def install(ctx):
     """Install cluster Addons."""
     run_action(
         action="install_addon",
-        addons=ctx.obj["addons_dict"],
+        addons_tuple=ctx.obj["addons_tuple"],
         parallel=ctx.obj["parallel"],
-        timeout=ctx.obj["timeout"],
         brew_token=ctx.obj["brew_token"],
         api_host=ctx.obj["api_host"],
-        rosa=ctx.obj["rosa"],
     )
 
 
-@addon.command()
+@addons.command()
 @click.pass_context
 def uninstall(ctx):
     """Uninstall cluster Addons."""
     run_action(
         action="uninstall_addon",
-        addons=ctx.obj["addons_dict"],
+        addons_tuple=ctx.obj["addons_tuple"],
         parallel=ctx.obj["parallel"],
-        timeout=ctx.obj["timeout"],
-        rosa=ctx.obj["rosa"],
     )
