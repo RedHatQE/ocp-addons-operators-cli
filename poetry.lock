@@ -1221,13 +1221,13 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.26"
+version = "1.0.27"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "openshift-cluster-management-python-wrapper-1.0.26.tar.gz", hash = "sha256:afd2ff4ffdd28ee8cbb381d799ba6427bfa6e59eec5ce6cc6b68c5dabe5b036a"},
+    {file = "openshift-cluster-management-python-wrapper-1.0.27.tar.gz", hash = "sha256:6c8f12c1cd27d02bc10b32291207b5f4c329f103c8c0700a2ee2232694c82bb4"},
 ]
 
 [package.dependencies]
@@ -1593,7 +1593,7 @@ version = "2.21"
 description = "C parser in Python"
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = "*"
 files = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
