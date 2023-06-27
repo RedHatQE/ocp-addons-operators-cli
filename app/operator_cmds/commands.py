@@ -34,7 +34,7 @@ def run_action(client, action, operators_tuple, parallel, brew_token=None):
             kwargs["channel"] = _operator.get("channel", "stable")
             kwargs["source"] = _operator.get("source", "redhat-operators")
             kwargs["iib_index_image"] = _operator.get("iib")
-            kwargs["target_namespaces"] = _operator.get("target-namespaces")
+            kwargs["target_namespaces"] = _operator.get("target_namespaces")
 
         if parallel:
             job = multiprocessing.Process(
