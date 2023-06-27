@@ -6,15 +6,18 @@ from click_dict_type import DictParamType
 from constants import TIMEOUT_30MIN
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
-from utils import set_debug_os_flags
+from utils import extract_iibs_from_json, set_debug_os_flags
 
 
 def _client(ctx):
     return get_client(config_file=ctx.obj["kubeconfig"])
 
 
-def run_action(client, action, operators_tuple, parallel, brew_token=None):
+def run_action(
+    client, action, operators_tuple, parallel, brew_token=None, iib_dict=None
+):
     jobs = []
+    iib_dict = iib_dict or {}
 
     operators_action = (
         install_operator if action == "install_operator" else uninstall_operator
@@ -33,7 +36,9 @@ def run_action(client, action, operators_tuple, parallel, brew_token=None):
         if action == "install_operator":
             kwargs["channel"] = _operator.get("channel", "stable")
             kwargs["source"] = _operator.get("source", "redhat-operators")
-            kwargs["iib_index_image"] = _operator.get("iib")
+            kwargs["iib_index_image"] = _operator.get(
+                "iib", iib_dict.get(operator_name)
+            )
             kwargs["target_namespaces"] = _operator.get("target-namespaces")
 
         if parallel:
@@ -122,12 +127,19 @@ def operators(ctx, kubeconfig, debug, operator, parallel, brew_token):
 @click.pass_context
 def install(ctx):
     """Install cluster Operator."""
+    ocp_version = os.environ.get("OCP_VERSION")
+    job_name = os.environ.get("JOB_NAME")
+    iib_dict = {}
+    if ocp_version and job_name:
+        iib_dict = extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name)
+
     run_action(
         client=_client(ctx=ctx),
         action="install_operator",
         operators_tuple=ctx.obj["operators_tuple"],
         parallel=ctx.obj["parallel"],
         brew_token=ctx.obj["brew_token"],
+        iib_dict=iib_dict,
     )
 
 
