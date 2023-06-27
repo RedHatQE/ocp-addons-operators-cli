@@ -1,7 +1,7 @@
+import ast
 import multiprocessing
 import os
 
-import ast
 import click
 from click_dict_type import DictParamType
 from constants import TIMEOUT_30MIN
@@ -35,7 +35,9 @@ def run_action(client, action, operators_tuple, parallel, brew_token=None):
             kwargs["channel"] = _operator.get("channel", "stable")
             kwargs["source"] = _operator.get("source", "redhat-operators")
             kwargs["iib_index_image"] = _operator.get("iib")
-            kwargs["target_namespaces"] = ast.literal_eval(_operator.get("target_namespaces"))
+            kwargs["target_namespaces"] = ast.literal_eval(
+                _operator.get("target_namespaces")
+            )
 
         if parallel:
             job = multiprocessing.Process(
