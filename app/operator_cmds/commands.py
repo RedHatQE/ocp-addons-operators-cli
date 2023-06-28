@@ -128,7 +128,7 @@ def operators(ctx, kubeconfig, debug, operator, parallel, brew_token):
 def install(ctx):
     """Install cluster Operator."""
     ocp_version = os.environ.get("OCP_VERSION")
-    job_name = os.environ.get("JOB_NAME")
+    job_name = os.environ.get("JOB_NAME") if os.environ.get("IIB_FROM_JSON") else None
     iib_dict = {}
     if ocp_version and job_name:
         iib_dict = extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name)
