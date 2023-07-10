@@ -29,11 +29,11 @@ cli = "app.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-colorlog = "*"
-openshift-python-wrapper = "*"
-openshift-python-utilities = "*"
 openshift-cluster-management-python-wrapper = "^1.0.21"
-click = "*"
+colorlog = "^6.7.0"
+openshift-python-wrapper = "^4.14.1"
+openshift-python-utilities = "^4.14.2"
+click = "^8.1.4"
 
 [tool.poetry.dev-dependencies]
 ipython = "*"
