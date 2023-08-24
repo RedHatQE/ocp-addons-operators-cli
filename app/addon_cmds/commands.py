@@ -50,7 +50,8 @@ def run_action(action, addons_tuple, parallel, brew_token=None, api_host="stage"
                     kwargs["brew_token"] = brew_token
                 else:
                     click.echo(
-                        f"--brew-token flag for {cluster_addon_obj.addon_name} addon install is missing"
+                        f"--brew-token flag for {cluster_addon_obj.addon_name} addon"
+                        " install is missing"
                     )
                     raise click.Abort()
 
