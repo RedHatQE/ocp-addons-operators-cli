@@ -509,45 +509,45 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.43"
+version = "1.0.28"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
-optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.43.tar.gz", hash = "sha256:15f7796a18537065a6f0c1504dc50a99e4ee791052e4c52e8b466739b041601a"},
-]
-
-[package.dependencies]
-colorlog = ">=6.7.0,<7.0.0"
-importlib = ">=1.0.4,<2.0.0"
-openshift-cluster-management-python-client = ">=1.0.23,<2.0.0"
-openshift-python-utilities = ">=4.14.2,<5.0.0"
-openshift-python-wrapper = ">=4.14.4,<5.0.0"
-python-benedict = ">=0.32.0,<0.33.0"
-python-simple-logger = ">=1.0.5,<2.0.0"
-pyyaml = ">=6.0.1,<7.0.0"
-redhat-qe-cloud-tools = ">=1.0.10,<2.0.0"
-requests = ">=2.31.0,<3.0.0"
-rosa-python-client = ">=1.0.28,<2.0.0"
-
-[[package]]
-name = "openshift-python-utilities"
-version = "4.14.7"
-description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "openshift-python-utilities-4.14.7.tar.gz", hash = "sha256:46785da910a7c0394361ec792530616f411d34d461a62dc37b549ed523ffa55e"},
+    {file = "openshift-cluster-management-python-wrapper-1.0.28.tar.gz", hash = "sha256:b2c1736d88c0732bf572d5131c8e9326e70c334a81f9d4739e92bcfce36fb8c4"},
 ]
 
 [package.dependencies]
 colorlog = "*"
-openshift = "*"
-openshift-python-wrapper-data-collector = "*"
-pytest = "*"
-pytest-testconfig = "*"
+importlib = "*"
+openshift-cluster-management-python-client = "*"
+openshift-python-utilities = "*"
+openshift-python-wrapper = "*"
+python-benedict = "*"
 python-simple-logger = "*"
-PyYAML = "*"
+pyyaml = "*"
+redhat-qe-cloud-tools = "*"
+requests = "*"
+rosa-python-client = "*"
+
+[[package]]
+name = "openshift-python-utilities"
+version = "5.0.0"
+description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "openshift_python_utilities-5.0.0.tar.gz", hash = "sha256:dbf8ece654070c8fe6eb4c930ae8b1e269ff2e3c8d6540242a69ef28a5c16c34"},
+]
+
+[package.dependencies]
+colorlog = ">=6.7.0,<7.0.0"
+openshift = ">=0.13.2,<0.14.0"
+openshift-python-wrapper-data-collector = ">=1.0.4,<2.0.0"
+pytest = ">=7.4.0,<8.0.0"
+pytest-testconfig = ">=0.2.0,<0.3.0"
+python-simple-logger = ">=1.0.5,<2.0.0"
+pyyaml = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "openshift-python-wrapper"
@@ -918,22 +918,22 @@ files = [
 
 [[package]]
 name = "redhat-qe-cloud-tools"
-version = "1.0.10"
+version = "1.0.8"
 description = "Python utilities to manage cloud services, such as AWS."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "redhat_qe_cloud_tools-1.0.10-py3-none-any.whl", hash = "sha256:47f64f90c91a4ed9b3d05ed914f038049a0c7d035276299ee8fc4899301ab40a"},
-    {file = "redhat_qe_cloud_tools-1.0.10.tar.gz", hash = "sha256:cb24b7df72fc0eeb3238056e88fd657f50a7422e216fc6b67d8f662b3933ca7a"},
+    {file = "redhat_qe_cloud_tools-1.0.8-py3-none-any.whl", hash = "sha256:877958ea38bfc0117f8cef163fcaa95df970a89b27dd046a6a96f8de81102f67"},
+    {file = "redhat_qe_cloud_tools-1.0.8.tar.gz", hash = "sha256:2cee5b86d9e17814b8f6d7cdf6e3e4ea1d3f29464ba07a1ad78acbf4b412728b"},
 ]
 
 [package.dependencies]
-boto3 = ">=1.28.1,<2.0.0"
-click = ">=8.1.4,<9.0.0"
-colorlog = ">=6.7.0,<7.0.0"
-configparser = ">=6.0.0,<7.0.0"
-openshift-python-utilities = ">=4.14.2,<5.0.0"
-python-simple-logger = ">=1.0.5,<2.0.0"
+boto3 = "*"
+click = "*"
+colorlog = "*"
+configparser = "*"
+openshift-python-utilities = "*"
+python-simple-logger = "*"
 
 [[package]]
 name = "requests"
@@ -1156,4 +1156,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "39ac1eedf3dd3c07ec4e0e5f3d2ef3198a2f7b2a2f9027c232c3933e22c705a9"
+content-hash = "bf38dd297901c41b79f493a570e53b0f6b7061d9a6a1f844048f12862f865f10"
