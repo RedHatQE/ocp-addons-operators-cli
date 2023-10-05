@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import click
 import requests
@@ -55,3 +56,52 @@ def click_echo(name, product, section, msg, success=None, error=None):
     click.secho(
         f"[Cluster: {name} - Product: {product} - Section: {section}]: {msg}", fg=fg
     )
+
+
+# TODO: Move to own repository.
+def tts(ts):
+    """
+    Convert time string to seconds.
+
+    Args:
+        ts (str): time string to convert, can be and int followed by s/m/h
+            if only numbers was sent return int(ts)
+
+    Example:
+        >>> tts(ts="1h")
+        3600
+        >>> tts(ts="3600")
+        3600
+
+    Returns:
+        int: Time in seconds
+    """
+    try:
+        time_and_unit = re.match(r"(?P<time>\d+)(?P<unit>\w)", str(ts)).groupdict()
+    except AttributeError:
+        return int(ts)
+
+    _time = int(time_and_unit["time"])
+    _unit = time_and_unit["unit"].lower()
+    if _unit == "s":
+        return _time
+    elif _unit == "m":
+        return _time * 60
+    elif _unit == "h":
+        return _time * 60 * 60
+    else:
+        return int(ts)
+
+
+def get_iib_dict():
+    ocp_version = os.environ.get("OCP_VERSION")
+    job_name = (
+        os.environ.get("JOB_NAME")
+        if os.environ.get("INSTALL_FROM_IIB") == "true"
+        else None
+    )
+    _iib_dict = {}
+    if ocp_version and job_name:
+        _iib_dict = extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name)
+
+    return _iib_dict

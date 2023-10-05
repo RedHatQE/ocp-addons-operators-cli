@@ -1,5 +1,6 @@
 import datetime
 import os
+import sys
 import time
 
 import click
@@ -9,6 +10,9 @@ from ocp_addons_operators_cli.constants import INSTALL_STR, UNINSTALL_STR
 from ocp_addons_operators_cli.utils.cli_utils import (
     get_addons_from_user_input,
     get_operators_from_user_input,
+    prepare_addons,
+    prepare_operators,
+    run_install_or_uninstall_products,
     verify_user_input,
 )
 
@@ -92,18 +96,19 @@ Optional parameters:
 )
 @click.option("--debug", help="Enable debug logs", is_flag=True)
 def main(**kwargs):
-    user_kwargs = kwargs
+    click.echo(f"Click Version: {click.__version__}")
+    click.echo(f"Python Version: {sys.version}")
+
     # TODO: add params from yaml file
+    user_kwargs = kwargs
     action = user_kwargs.get("action")
     operators = get_operators_from_user_input(**user_kwargs)
     addons = get_addons_from_user_input(**user_kwargs)
-    user_kwargs.get("endpoint")
-    user_kwargs.get("brew_token")
-    user_kwargs.get("debug")
-    user_kwargs.get("kubeconfig")
-    user_kwargs.get("cluster_name")
-    user_kwargs.get("ocm_token")
-    user_kwargs.get("parallel")
+    endpoint = user_kwargs.get("endpoint")
+    brew_token = user_kwargs.get("brew_token")
+    debug = user_kwargs.get("debug")
+    ocm_token = user_kwargs.get("ocm_token")
+    parallel = user_kwargs.get("parallel")
 
     user_kwargs["operators"] = operators
     user_kwargs["addons"] = addons
@@ -111,6 +116,25 @@ def main(**kwargs):
     user_kwargs["install"] = install
 
     verify_user_input(**user_kwargs)
+
+    operators = prepare_operators(
+        operators=operators, brew_token=brew_token, install=install
+    )
+    addons = prepare_addons(
+        addons=addons,
+        ocm_token=ocm_token,
+        endpoint=endpoint,
+        brew_token=brew_token,
+        install=install,
+    )
+
+    run_install_or_uninstall_products(
+        operators=operators,
+        addons=addons,
+        parallel=parallel,
+        debug=debug,
+        install=install,
+    )
 
 
 if __name__ == "__main__":
