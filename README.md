@@ -27,17 +27,17 @@ git clone https://github.com/RedHatQE/ocp-addons-operators-cli.git
 
 Install [poetry](https://github.com/python-poetry/poetry)
 
-Use `poetry run app/cli.py` to execute the cli.
+Use `poetry run ocp_addons_operators_cli/cli.py` to execute the cli.
 
 ```
 poetry install
-poetry run python app/cli.py --help
+poetry run python ocp_addons_operators_cli/cli.py --help
 ```
 
 
 ### Addons
 
-Each command can be run via container `podman run quay.io/redhat_msi/ocp-addons-operators-cli` or via poetry command `poetry run app/cli.py`
+Each command can be run via container `podman run quay.io/redhat_msi/ocp-addons-operators-cli` or via poetry command `poetry run python ocp_addons_operators_cli/cli.py`
 
 ### Addon/Operator user args
 

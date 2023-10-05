@@ -6,8 +6,14 @@ RUN curl -L https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/ro
     && chmod +x /usr/bin/rosa \
     && rosa version
 
-COPY . /ocp-addons-operators-cli
+COPY pyproject.toml poetry.lock README.md /ocp-addons-operators-cli/
+COPY ocp_addons_operators_cli /ocp-addons-operators-cli/ocp_addons_operators_cli/
+
 WORKDIR /ocp-addons-operators-cli
+
+ENV POETRY_HOME=/ocp-addons-operators-cli
+ENV PATH="/ocp-addons-operators-cli/bin:$PATH"
+
 RUN python3 -m pip install pip --upgrade \
     && python3 -m pip install poetry \
     && poetry config cache-dir /ocp-addons-operators-cli \
@@ -17,4 +23,4 @@ RUN python3 -m pip install pip --upgrade \
     && poetry install \
     && poetry export --without-hashes -n
 
-ENTRYPOINT ["poetry", "run", "python", "app/cli.py"]
+ENTRYPOINT ["poetry", "run", "python", "ocp_addons_operators_cli/cli.py"]
