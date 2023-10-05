@@ -27,7 +27,7 @@ git clone https://github.com/RedHatQE/ocp-addons-operators-cli.git
 
 Install [poetry](https://github.com/python-poetry/poetry)
 
-Use `poetry run ocp_addons_operators_cli/cli.py` to execute the cli.
+Use `poetry run python ocp_addons_operators_cli/cli.py` to execute the cli.
 
 ```
 poetry install
