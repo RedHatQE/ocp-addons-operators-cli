@@ -2,12 +2,13 @@ import multiprocessing
 import os
 
 import click
-from click_dict_type import DictParamType
-from constants import TIMEOUT_30MIN
 from ocm_python_client.exceptions import NotFoundException
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
-from utils import set_debug_os_flags
+
+from ocp_addons_operators_cli.click_dict_type import DictParamType
+from ocp_addons_operators_cli.constants import TIMEOUT_30MIN
+from ocp_addons_operators_cli.utils import set_debug_os_flags
 
 
 def extract_addon_params(addon_dict):

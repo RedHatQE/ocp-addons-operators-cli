@@ -1,8 +1,9 @@
 import sys
 
 import click
-from addon_cmds import commands as addons
-from operator_cmds import commands as operators
+
+from ocp_addons_operators_cli.addon_cmds import commands as addons
+from ocp_addons_operators_cli.operator_cmds import commands as operators
 
 
 @click.group()

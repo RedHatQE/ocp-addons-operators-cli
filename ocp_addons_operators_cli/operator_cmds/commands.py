@@ -2,11 +2,12 @@ import multiprocessing
 import os
 
 import click
-from click_dict_type import DictParamType
-from constants import TIMEOUT_30MIN
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
-from utils import extract_iibs_from_json, set_debug_os_flags
+
+from ocp_addons_operators_cli.click_dict_type import DictParamType
+from ocp_addons_operators_cli.constants import TIMEOUT_30MIN
+from ocp_addons_operators_cli.utils import extract_iibs_from_json, set_debug_os_flags
 
 
 def _client(ctx):
