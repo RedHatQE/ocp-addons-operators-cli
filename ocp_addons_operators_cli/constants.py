@@ -1,1 +1,11 @@
+# General
+INSTALL_STR = "install"
+UNINSTALL_STR = "uninstall"
+SUPPORTED_ACTIONS = [INSTALL_STR, UNINSTALL_STR]
+
+# Timeouts
 TIMEOUT_30MIN = 60 * 30
+
+# Log colors
+ERROR_LOG_COLOR = "red"
+SUCCESS_LOG_COLOR = "green"

@@ -1,7 +1,10 @@
 import json
 import os
 
+import click
 import requests
+
+from ocp_addons_operators_cli.constants import ERROR_LOG_COLOR, SUCCESS_LOG_COLOR
 
 
 def set_debug_os_flags():
@@ -39,3 +42,16 @@ def extract_iibs_from_json(ocp_version, job_name):
         ].items()
         if operator_config["triggered"]
     }
+
+
+def click_echo(name, product, section, msg, success=None, error=None):
+    if success:
+        fg = SUCCESS_LOG_COLOR
+    elif error:
+        fg = ERROR_LOG_COLOR
+    else:
+        fg = "white"
+
+    click.secho(
+        f"[Cluster: {name} - Product: {product} - Section: {section}]: {msg}", fg=fg
+    )

@@ -1,12 +1,10 @@
 import multiprocessing
-import os
 
 import click
 from ocm_python_client.exceptions import NotFoundException
 from ocm_python_wrapper.cluster import ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 
-from ocp_addons_operators_cli.click_dict_type import DictParamType
 from ocp_addons_operators_cli.constants import TIMEOUT_30MIN
 from ocp_addons_operators_cli.utils import set_debug_os_flags
 
@@ -78,65 +76,6 @@ def run_action(action, addons_tuple, parallel, brew_token=None, api_host="stage"
         raise click.Abort()
 
 
-@click.group()
-@click.option(
-    "-a",
-    "--addon",
-    type=DictParamType(),
-    help="""
-\b
-Addon to install.
-Format to pass is:
-    'name=addon1;param1=1;param2=2;rosa=true;timeout=60'
-Optional parameters:
-    addon parameters - needed parameters for addon installation.
-    timeout - addon install / uninstall timeout in seconds, default: 30 minutes.
-    rosa - if true, then it will be installed using ROSA cli.
-    """,
-    required=True,
-    multiple=True,
-)
-@click.option(
-    "-e",
-    "--endpoint",
-    help="SSO endpoint url",
-    default="https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token",
-    show_default=True,
-)
-@click.option(
-    "-t",
-    "--token",
-    help="OCM token (Taken from oc environment OCM_TOKEN if not passed)",
-    required=True,
-    default=os.environ.get("OCM_TOKEN"),
-)
-@click.option(
-    "--brew-token",
-    help="""
-    \b
-    Brew token (needed to install managed-odh addon in stage).
-    Default value is taken from environment variable, else will be taken from --brew-token flag.
-    """,
-    required=False,
-    default=os.environ.get("BREW_TOKEN"),
-)
-@click.option("-c", "--cluster", help="Cluster name", required=True)
-@click.option("--debug", help="Enable debug logs", is_flag=True)
-@click.option(
-    "--api-host",
-    help="API host",
-    default="stage",
-    type=click.Choice(["stage", "production"]),
-    show_default=True,
-)
-@click.option(
-    "-p",
-    "--parallel",
-    help="Run addons install/uninstall in parallel",
-    is_flag=True,
-    show_default=True,
-)
-@click.pass_context
 def addons(
     ctx,
     addon,
@@ -181,8 +120,6 @@ def addons(
     ctx.obj["addons_tuple"] = addon_tuple
 
 
-@addons.command()
-@click.pass_context
 def install(ctx):
     """Install cluster Addons."""
     run_action(
@@ -194,8 +131,6 @@ def install(ctx):
     )
 
 
-@addons.command()
-@click.pass_context
 def uninstall(ctx):
     """Uninstall cluster Addons."""
     run_action(
