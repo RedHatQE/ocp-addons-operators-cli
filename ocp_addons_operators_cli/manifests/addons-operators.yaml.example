@@ -1,0 +1,23 @@
+action: "install" # uninstall, can be passed also to CLI with --action
+kubeconfig: !ENV "${HOME}/registry-config.json"
+parallel: True
+endpoint: "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
+ocm_token: !ENV "${OCM_TOKEN}"
+brew-token: !ENV "${BREW_TOKEN}"
+
+addons:
+- name: ocm-addon-test-operator
+  cluster-name: cluster1
+  has-external-resources: "false"
+  aws-cluster-test-param: "false"
+  timeout: 30m
+  rosa: true
+  ocm-env: stage
+
+operators:
+  - name: openshift-pipelines-operator-rh
+    namespace: openshift-pipelines
+    channel: latest
+    source: redhat-operators
+    kubeconfig: !ENV "${HOME}/registry-config.json"  # optional
+    iib: </path/to/iib:123456>

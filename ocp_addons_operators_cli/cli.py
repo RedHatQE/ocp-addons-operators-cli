@@ -4,6 +4,7 @@ import sys
 import time
 
 import click
+from pyaml_env import parse_config
 
 from ocp_addons_operators_cli.click_dict_type import DictParamType
 from ocp_addons_operators_cli.constants import INSTALL_STR, UNINSTALL_STR
@@ -102,6 +103,12 @@ def main(**kwargs):
 
     # TODO: add params from yaml file
     user_kwargs = kwargs
+    clusters_yaml_config_file = user_kwargs.get("clusters_yaml_config_file")
+    if clusters_yaml_config_file:
+        # Update CLI user input from YAML file if exists
+        # Since CLI user input has some defaults, YAML file will override them
+        user_kwargs.update(parse_config(path=clusters_yaml_config_file))
+
     action = user_kwargs.get("action")
     operators = get_operators_from_user_input(**user_kwargs)
     addons = get_addons_from_user_input(**user_kwargs)
