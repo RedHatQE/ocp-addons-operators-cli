@@ -8,14 +8,18 @@ from pyaml_env import parse_config
 
 from ocp_addons_operators_cli.click_dict_type import DictParamType
 from ocp_addons_operators_cli.constants import INSTALL_STR, UNINSTALL_STR
-from ocp_addons_operators_cli.utils.cli_utils import (
+from ocp_addons_operators_cli.utils.addons_utils import (
     get_addons_from_user_input,
-    get_operators_from_user_input,
     prepare_addons,
-    prepare_operators,
+)
+from ocp_addons_operators_cli.utils.cli_utils import (
     run_install_or_uninstall_products,
     set_parallel,
     verify_user_input,
+)
+from ocp_addons_operators_cli.utils.operators_utils import (
+    get_operators_from_user_input,
+    prepare_operators,
 )
 
 
@@ -90,6 +94,16 @@ Optional parameters:
     show_default=True,
 )
 @click.option(
+    "--yaml-config-file",
+    help="""
+    \b
+    YAML file with configuration to install/uninstall addons and operators.
+    Any option in YAML file will override the CLI option.
+    See manifests/addons-operators.yaml.example for example.
+    """,
+    type=click.Path(exists=True),
+)
+@click.option(
     "-p",
     "--parallel",
     help="Run install/uninstall in parallel",
@@ -101,9 +115,8 @@ def main(**kwargs):
     click.echo(f"Click Version: {click.__version__}")
     click.echo(f"Python Version: {sys.version}")
 
-    # TODO: add params from yaml file
     user_kwargs = kwargs
-    clusters_yaml_config_file = user_kwargs.get("clusters_yaml_config_file")
+    clusters_yaml_config_file = user_kwargs.get("yaml_config_file")
     if clusters_yaml_config_file:
         # Update CLI user input from YAML file if exists
         # Since CLI user input has some defaults, YAML file will override them
