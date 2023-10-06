@@ -7,7 +7,7 @@ import click
 from pyaml_env import parse_config
 
 from ocp_addons_operators_cli.click_dict_type import DictParamType
-from ocp_addons_operators_cli.constants import INSTALL_STR, UNINSTALL_STR
+from ocp_addons_operators_cli.constants import INSTALL_STR, SUPPORTED_ACTIONS
 from ocp_addons_operators_cli.utils.addons_utils import (
     get_addons_from_user_input,
     prepare_addons,
@@ -27,7 +27,7 @@ from ocp_addons_operators_cli.utils.operators_utils import (
 @click.option(
     "-a",
     "--action",
-    type=click.Choice([INSTALL_STR, UNINSTALL_STR]),
+    type=click.Choice(SUPPORTED_ACTIONS),
     help="Action to perform",
 )
 @click.option(
