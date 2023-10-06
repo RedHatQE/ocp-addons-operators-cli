@@ -13,6 +13,7 @@ from ocp_addons_operators_cli.utils.cli_utils import (
     prepare_addons,
     prepare_operators,
     run_install_or_uninstall_products,
+    set_parallel,
     verify_user_input,
 )
 
@@ -108,8 +109,11 @@ def main(**kwargs):
     brew_token = user_kwargs.get("brew_token")
     debug = user_kwargs.get("debug")
     ocm_token = user_kwargs.get("ocm_token")
-    parallel = user_kwargs.get("parallel")
-
+    parallel = set_parallel(
+        user_input_parallel=user_kwargs.get("parallel"),
+        operators=operators,
+        addons=addons,
+    )
     user_kwargs["operators"] = operators
     user_kwargs["addons"] = addons
     install = action == INSTALL_STR

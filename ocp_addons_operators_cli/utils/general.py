@@ -45,7 +45,7 @@ def extract_iibs_from_json(ocp_version, job_name):
     }
 
 
-def click_echo(name, product, section, msg, success=None, error=None):
+def click_echo(cluster_name, name, product, section, msg, success=None, error=None):
     if success:
         fg = SUCCESS_LOG_COLOR
     elif error:
@@ -54,7 +54,9 @@ def click_echo(name, product, section, msg, success=None, error=None):
         fg = "white"
 
     click.secho(
-        f"[Cluster: {name} - Product: {product} - Section: {section}]: {msg}", fg=fg
+        f"[Cluster: {cluster_name} - Product: {name} - Product type: {product} -"
+        f" Section: {section}]: {msg}",
+        fg=fg,
     )
 
 

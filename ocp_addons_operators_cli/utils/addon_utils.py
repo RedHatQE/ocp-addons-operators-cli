@@ -9,7 +9,17 @@ def extract_addon_params(addon_dict):
         list: list of addon parameters dicts
 
     """
-    exclude_list = ["cluster_addon", "name", "timeout", "rosa"]
+    exclude_list = [
+        "cluster-addon",
+        "name",
+        "timeout",
+        "rosa",
+        "ocm-client",
+        "cluster-object",
+        "ocm-env",
+        "brew-token",
+        "cluster-name",
+    ]
     resource_parameters = []
 
     for key, value in addon_dict.items():
@@ -17,3 +27,5 @@ def extract_addon_params(addon_dict):
             continue
 
         resource_parameters.append({"id": key, "value": value})
+
+    return resource_parameters

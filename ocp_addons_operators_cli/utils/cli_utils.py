@@ -2,6 +2,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
+import yaml
 from ocm_python_client.exceptions import NotFoundException
 from ocm_python_wrapper.cluster import Cluster, ClusterAddOn
 from ocm_python_wrapper.ocm_client import OCMPythonClient
@@ -10,6 +11,7 @@ from ocp_utilities.operators import install_operator, uninstall_operator
 
 from ocp_addons_operators_cli.constants import (
     ADDON_STR,
+    ERROR_LOG_COLOR,
     OPERATOR_STR,
     PRODUCTION_STR,
     STAGE_STR,
@@ -57,6 +59,7 @@ def get_addons_from_user_input(**kwargs):
 def abort_no_ocm_token(ocm_token, addons, section):
     if addons and not ocm_token:
         click_echo(
+            cluster_name=NO_PRODUCT_NAME_FOR_LOG,
             name=NO_PRODUCT_NAME_FOR_LOG,
             product=ADDON_STR,
             section=section,
@@ -73,12 +76,13 @@ def assert_operators_user_input(operators, section):
         ]
         if operators_missing_kubeconfig:
             click_echo(
-                name=NO_PRODUCT_NAME_FOR_LOG,
+                cluster_name=NO_PRODUCT_NAME_FOR_LOG,
+                name=operators_missing_kubeconfig,
                 product=OPERATOR_STR,
                 section=section,
                 msg=(
-                    f"`kubeconfig` is missing for {operators_missing_kubeconfig}."
-                    " Either add to operator config or pass `--kubeconfig`"
+                    "`kubeconfig` is missing. Either add to operator config or pass"
+                    " `--kubeconfig`"
                 ),
                 error=True,
             )
@@ -92,13 +96,11 @@ def assert_operators_user_input(operators, section):
 
         if operator_non_existing_kubeconfig:
             click_echo(
-                name=NO_PRODUCT_NAME_FOR_LOG,
+                cluster_name=NO_PRODUCT_NAME_FOR_LOG,
+                name=operators_missing_kubeconfig,
                 product=OPERATOR_STR,
                 section=section,
-                msg=(
-                    "`kubeconfig` file does not exist for"
-                    f" {operators_missing_kubeconfig}."
-                ),
+                msg="`kubeconfig` file does not exist.",
                 error=True,
             )
             raise click.Abort()
@@ -111,12 +113,13 @@ def assert_addons_user_input(addons, section):
         ]
         if addons_missing_cluster_name:
             click_echo(
-                name=NO_PRODUCT_NAME_FOR_LOG,
+                cluster_name=NO_PRODUCT_NAME_FOR_LOG,
+                name=addons_missing_cluster_name,
                 product=ADDON_STR,
                 section=section,
                 msg=(
-                    f"`cluster-name` is missing for {addons_missing_cluster_name}."
-                    " Either add to addon config or pass `--cluster-name`"
+                    "`cluster-name` is missing. Either add to addon config or pass"
+                    " `--cluster-name`"
                 ),
                 error=True,
             )
@@ -133,13 +136,11 @@ def assert_addons_user_input(addons, section):
         ]
         if addons_wrong_env:
             click_echo(
-                name=NO_PRODUCT_NAME_FOR_LOG,
+                cluster_name=NO_PRODUCT_NAME_FOR_LOG,
+                name=addons_wrong_env,
                 product=ADDON_STR,
                 section=section,
-                msg=(
-                    f"Addons {addons_wrong_env} have wrong OCM environment. Supported"
-                    f" envs: {supported_envs}"
-                ),
+                msg=f"Wrong OCM environment. Supported envs: {supported_envs}",
                 error=True,
             )
             raise click.Abort()
@@ -149,7 +150,6 @@ def verify_user_input(**kwargs):
     action = kwargs.get("action")
     operators = kwargs.get("operators")
     addons = kwargs.get("addons")
-    kwargs.get("brew_token")
     ocm_token = kwargs.get("ocm_token")
 
     section = "Verify user input"
@@ -157,6 +157,7 @@ def verify_user_input(**kwargs):
 
     if not action:
         click_echo(
+            cluster_name=NO_PRODUCT_NAME_FOR_LOG,
             name=NO_PRODUCT_NAME_FOR_LOG,
             product=NO_PRODUCT_NAME_FOR_LOG,
             section=section,
@@ -167,6 +168,7 @@ def verify_user_input(**kwargs):
 
     if action not in SUPPORTED_ACTIONS:
         click_echo(
+            cluster_name=NO_PRODUCT_NAME_FOR_LOG,
             name=NO_PRODUCT_NAME_FOR_LOG,
             product=NO_PRODUCT_NAME_FOR_LOG,
             section=section,
@@ -179,6 +181,7 @@ def verify_user_input(**kwargs):
 
     if not (operators or addons):
         click_echo(
+            cluster_name=NO_PRODUCT_NAME_FOR_LOG,
             name=NO_PRODUCT_NAME_FOR_LOG,
             product=NO_PRODUCT_NAME_FOR_LOG,
             section=section,
@@ -191,10 +194,32 @@ def verify_user_input(**kwargs):
     assert_addons_user_input(addons=addons, section=section)
 
 
+def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):
+    with open(kubeconfig) as fd:
+        kubeconfig = yaml.safe_load(fd)
+
+    kubeconfig_clusters = kubeconfig["clusters"]
+    if len(kubeconfig_clusters) > 1:
+        click_echo(
+            cluster_name=None,
+            name=operator_name,
+            product=OPERATOR_STR,
+            section="Prepare operators",
+            msg="Kubeconfig file contains more than one cluster.",
+            error=True,
+        )
+        raise click.Abort()
+
+    return kubeconfig_clusters[0]["name"]
+
+
 def prepare_operators(operators, brew_token, install):
     for operator in operators:
-        # TODO: add cluster name
-        operator["ocp-client"] = get_client(config_file=operator["kubeconfig"])
+        kubeconfig = operator["kubeconfig"]
+        operator["ocp-client"] = get_client(config_file=kubeconfig)
+        operator["cluster-name"] = get_cluster_name_from_kubeconfig(
+            kubeconfig=kubeconfig, operator_name=operator["name"]
+        )
         operator["timeout"] = tts(ts=operator.get("timeout", TIMEOUT_60MIN))
 
         if install:
@@ -213,7 +238,7 @@ def prepare_operators(operators, brew_token, install):
 def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
     for addon in addons:
         addon_name = addon["name"]
-        addon["wait_timeout"] = tts(ts=addon.get("timeout", TIMEOUT_60MIN))
+        addon["timeout"] = tts(ts=addon.get("timeout", TIMEOUT_60MIN))
         ocm_env = addon.get("ocm-env", STAGE_STR)
         addon["ocm-env"] = ocm_env
         addon["brew-token"] = brew_token
@@ -236,11 +261,12 @@ def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
 
             cluster_name = addon["cluster-name"]
             try:
-                addon["cluster_addon"] = ClusterAddOn(
+                addon["cluster-addon"] = ClusterAddOn(
                     client=ocm_client, cluster_name=cluster_name, addon_name=addon_name
                 )
             except NotFoundException as exc:
                 click_echo(
+                    cluster_name=addon["cluster-name"],
                     name=addon_name,
                     product=ADDON_STR,
                     section="Prepare addon config",
@@ -255,13 +281,11 @@ def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
                 else:
                     # TODO: remove to veify?
                     click_echo(
+                        cluster_name=addon["cluster-name"],
                         name=addon_name,
                         product=ADDON_STR,
                         section="Prepare addon config",
-                        msg=(
-                            f"--brew-token flag for {addon_name} addon install is"
-                            " missing"
-                        ),
+                        msg="--brew-token flag addon install is missing",
                         error=True,
                     )
                     raise click.Abort()
@@ -294,6 +318,7 @@ def run_operator_action(operators, install, section, parallel, executor):
 
         # TODO add cluster name
         click_echo(
+            cluster_name=operator["cluster-name"],
             name=name,
             product=OPERATOR_STR,
             section=section,
@@ -311,13 +336,14 @@ def run_operator_action(operators, install, section, parallel, executor):
 def run_addons_action(addons, install, section, parallel, executor):
     futures = []
     processed_results = []
-    addon_func = ClusterAddOn.install_addon if install else ClusterAddOn.uninstall_addon
 
     for addon in addons:
+        addon_obj = addon["cluster-addon"]
+        addon_func = addon_obj.install_addon if install else addon_obj.uninstall_addon
         name = addon["name"]
         action_kwargs = {
             "wait": True,
-            "wait_timeout": addon["wait_timeout"],
+            "wait_timeout": addon["timeout"],
             "rosa": addon["rosa"],
         }
         if install:
@@ -327,6 +353,7 @@ def run_addons_action(addons, install, section, parallel, executor):
                 action_kwargs["brew_token"] = brew_token
 
         click_echo(
+            cluster_name=addon["cluster-name"],
             name=name,
             product=ADDON_STR,
             section=section,
@@ -375,11 +402,17 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
     if futures:
         for result in as_completed(futures):
             if result.exception():
-                click_echo(
-                    name="XXX",  # TODO: get from thread
-                    product="XXX",  # TODO: get from thread
-                    section=section,
-                    msg=f"Failed to run: {result.exception()}\n",
-                    error=True,
+                # TODO: Add cluster name, product name and type to threads
+                click.secho(
+                    f"Failed to {'install' if install else 'uninstall'}:"
+                    f" {result.exception()}\n",
+                    fg=ERROR_LOG_COLOR,
                 )
                 raise click.Abort()
+
+
+def set_parallel(user_input_parallel, operators, addons):
+    if (operators and len(operators)) == 1 or (addons and len(addons)) == 1:
+        return False
+
+    return user_input_parallel
