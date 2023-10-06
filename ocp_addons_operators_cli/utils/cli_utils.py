@@ -17,8 +17,6 @@ from ocp_addons_operators_cli.utils.operators_utils import (
     run_operator_action,
 )
 
-NO_PRODUCT_NAME_FOR_LOG = "All"
-
 
 def abort_no_ocm_token(ocm_token, addons, section):
     if addons and not ocm_token:

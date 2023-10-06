@@ -12,8 +12,8 @@ ADDON_STR = "addon"
 OPERATOR_STR = "operator"
 
 # Timeouts
-TIMEOUT_30MIN = 60 * 30
-TIMEOUT_60MIN = 60 * 60
+TIMEOUT_30MIN = "30m"
+TIMEOUT_60MIN = "60m"
 
 # Log colors
 ERROR_LOG_COLOR = "red"

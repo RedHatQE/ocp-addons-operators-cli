@@ -74,7 +74,7 @@ Optional parameters:
 @click.option(
     "-t",
     "--ocm-token",
-    help="OCM token (Taken from oc environment OCM_TOKEN if not passed)",
+    help="OCM token (Taken from environment environment `OCM_TOKEN` if not passed)",
     default=os.environ.get("OCM_TOKEN"),
 )
 @click.option(
@@ -82,7 +82,7 @@ Optional parameters:
     help="""
     \b
     Brew token (needed to install managed-odh addon in stage).
-    Default value is taken from environment variable, else will be taken from --brew-token flag.
+    Default value is taken from environment variable `BREW_TOKEN`, else will be taken from --brew-token flag.
     """,
     default=os.environ.get("BREW_TOKEN"),
 )

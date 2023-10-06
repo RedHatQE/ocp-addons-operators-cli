@@ -7,7 +7,7 @@ from ocp_addons_operators_cli.constants import (
     ADDON_STR,
     PRODUCTION_STR,
     STAGE_STR,
-    TIMEOUT_60MIN,
+    TIMEOUT_30MIN,
 )
 from ocp_addons_operators_cli.utils.general import click_echo, tts
 
@@ -99,7 +99,7 @@ def assert_addons_user_input(addons, section):
 def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
     for addon in addons:
         addon_name = addon["name"]
-        addon["timeout"] = tts(ts=addon.get("timeout", TIMEOUT_60MIN))
+        addon["timeout"] = tts(ts=addon.get("timeout", TIMEOUT_30MIN))
         ocm_env = addon.get("ocm-env", STAGE_STR)
         addon["ocm-env"] = ocm_env
         addon["brew-token"] = brew_token
@@ -119,8 +119,8 @@ def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
 
         if install:
             addon["parameters"] = extract_addon_params(addon_dict=addon)
-
             cluster_name = addon["cluster-name"]
+
             try:
                 addon["cluster-addon"] = ClusterAddOn(
                     client=ocm_client, cluster_name=cluster_name, addon_name=addon_name
