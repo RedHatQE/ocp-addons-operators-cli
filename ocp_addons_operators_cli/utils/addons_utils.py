@@ -99,6 +99,7 @@ def assert_addons_user_input(addons, section):
 def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
     for addon in addons:
         addon_name = addon["name"]
+        cluster_name = addon["cluster-name"]
         addon["timeout"] = tts(ts=addon.get("timeout", TIMEOUT_30MIN))
         ocm_env = addon.get("ocm-env", STAGE_STR)
         addon["ocm-env"] = ocm_env
@@ -117,24 +118,23 @@ def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
             name=addon_name,
         )
 
+        try:
+            addon["cluster-addon"] = ClusterAddOn(
+                client=ocm_client, cluster_name=cluster_name, addon_name=addon_name
+            )
+        except NotFoundException as exc:
+            click_echo(
+                cluster_name=addon["cluster-name"],
+                name=addon_name,
+                product=ADDON_STR,
+                section="Prepare addon config",
+                msg=f"Failed to get addon for cluster {cluster_name} on {exc}.",
+                error=True,
+            )
+            raise click.Abort()
+
         if install:
             addon["parameters"] = extract_addon_params(addon_dict=addon)
-            cluster_name = addon["cluster-name"]
-
-            try:
-                addon["cluster-addon"] = ClusterAddOn(
-                    client=ocm_client, cluster_name=cluster_name, addon_name=addon_name
-                )
-            except NotFoundException as exc:
-                click_echo(
-                    cluster_name=addon["cluster-name"],
-                    name=addon_name,
-                    product=ADDON_STR,
-                    section="Prepare addon config",
-                    msg=f"Failed to get addon for cluster {cluster_name} on {exc}.",
-                    error=True,
-                )
-                raise click.Abort()
 
             if addon_name == "managed-odh" and ocm_env == STAGE_STR:
                 if brew_token:

@@ -75,8 +75,8 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
                 parallel=parallel,
                 executor=executor,
             )
-            futures.append(operators_futures)
-            processed_results.append(operators_processed_results)
+            futures.extend(operators_futures)
+            processed_results.extend(operators_processed_results)
 
         if addons:
             addons_futures, addons_processed_results = run_addons_action(
@@ -86,8 +86,8 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
                 parallel=parallel,
                 executor=executor,
             )
-            futures.append(addons_futures)
-            processed_results.append(addons_processed_results)
+            futures.extend(addons_futures)
+            processed_results.extend(addons_processed_results)
 
     if futures:
         for result in as_completed(futures):
