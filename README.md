@@ -202,3 +202,18 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     -o 'name=rhods-operator;namespace=redhat-ods-operator' \
     -o 'name=servicemeshoperator;timeout=600'
 ```
+
+
+##### Operator and addon
+
+To run multiple operators install in parallel pass -p,--parallel.
+
+```
+podman run quay.io/redhat_msi/ocp-addons-operators-cli \
+    --action install \
+    --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
+    -t $OCM_TOKEN \
+    -c cluster1 \
+    -a 'name=ocm-addon-test-operator;has-external-resources=false;aws-cluster-test-param=false' \
+    -o 'name=servicemeshoperator;timeout=600'
+```

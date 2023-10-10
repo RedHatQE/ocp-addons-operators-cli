@@ -1,31 +1,25 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
+from simple_logger.logger import get_logger
 
-from ocp_addons_operators_cli.constants import (
-    ADDON_STR,
-    ERROR_LOG_COLOR,
-    SUPPORTED_ACTIONS,
-)
+from ocp_addons_operators_cli.constants import ERROR_LOG_COLOR, SUPPORTED_ACTIONS
 from ocp_addons_operators_cli.utils.addons_utils import (
     assert_addons_user_input,
-    run_addons_action,
+    prepare_addons_action,
 )
-from ocp_addons_operators_cli.utils.general import click_echo, set_debug_os_flags
+from ocp_addons_operators_cli.utils.general import set_debug_os_flags
 from ocp_addons_operators_cli.utils.operators_utils import (
     assert_operators_user_input,
-    run_operator_action,
+    prepare_operators_action,
 )
 
+LOGGER = get_logger(name=__name__)
 
-def abort_no_ocm_token(ocm_token, addons, section):
+
+def abort_no_ocm_token(ocm_token, addons):
     if addons and not ocm_token:
-        click_echo(
-            product=ADDON_STR,
-            section=section,
-            msg="`--ocm-token` is required for addon installation",
-            error=True,
-        )
+        LOGGER.error("`--ocm-token` is required for addon installation")
         raise click.Abort()
 
 
@@ -35,27 +29,20 @@ def verify_user_input(**kwargs):
     addons = kwargs.get("addons")
     ocm_token = kwargs.get("ocm_token")
 
-    section = "Verify user input"
-    abort_no_ocm_token(ocm_token=ocm_token, addons=addons, section=section)
+    abort_no_ocm_token(ocm_token=ocm_token, addons=addons)
 
     if not action:
-        click_echo(
-            section=section,
-            msg=f"'action' must be provided, supported actions: `{SUPPORTED_ACTIONS}`",
-            error=True,
+        LOGGER.error(
+            f"'action' must be provided, supported actions: `{SUPPORTED_ACTIONS}`"
         )
         raise click.Abort()
 
     if not (operators or addons):
-        click_echo(
-            section=section,
-            msg="At least one '--operator' oe `--addon` option must be provided.",
-            error=True,
-        )
+        LOGGER.error("At least one '--operator' or `--addon` option must be provided.")
         raise click.Abort()
 
-    assert_operators_user_input(operators=operators, section=section)
-    assert_addons_user_input(addons=addons, section=section)
+    assert_operators_user_input(operators=operators)
+    assert_addons_user_input(addons=addons, brew_token=kwargs.get("brew_token"))
 
 
 def run_install_or_uninstall_products(operators, addons, parallel, debug, install):
@@ -64,30 +51,25 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
 
     futures = []
     processed_results = []
-    section = f"{'Install' if install else 'Uninstall'}"
 
     with ThreadPoolExecutor() as executor:
-        if operators:
-            operators_futures, operators_processed_results = run_operator_action(
-                operators=operators,
-                install=install,
-                section=section,
-                parallel=parallel,
-                executor=executor,
-            )
-            futures.extend(operators_futures)
-            processed_results.extend(operators_processed_results)
+        operators_action_list = prepare_operators_action(
+            operators=operators,
+            install=install,
+        )
 
-        if addons:
-            addons_futures, addons_processed_results = run_addons_action(
-                addons=addons,
-                install=install,
-                section=section,
-                parallel=parallel,
-                executor=executor,
-            )
-            futures.extend(addons_futures)
-            processed_results.extend(addons_processed_results)
+        addons_action_list = prepare_addons_action(
+            addons=addons,
+            install=install,
+        )
+
+        for product_action_tuple in addons_action_list + operators_action_list:
+            action_func = product_action_tuple[0]
+            action_kwargs = product_action_tuple[1]
+            if parallel:
+                futures.append(executor.submit(action_func(), **action_kwargs))
+            else:
+                processed_results.append(action_func(**action_kwargs))
 
     if futures:
         for result in as_completed(futures):
@@ -99,10 +81,13 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
                     fg=ERROR_LOG_COLOR,
                 )
                 raise click.Abort()
+            processed_results.append(result.result())
+
+    return processed_results
 
 
 def set_parallel(user_input_parallel, operators, addons):
-    if (operators and len(operators)) == 1 or (addons and len(addons)) == 1:
-        return False
+    if len(operators + addons) > 1:
+        return user_input_parallel
 
-    return user_input_parallel
+    return False

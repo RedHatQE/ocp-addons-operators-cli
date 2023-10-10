@@ -5,6 +5,7 @@ import time
 
 import click
 from pyaml_env import parse_config
+from simple_logger.logger import get_logger
 
 from ocp_addons_operators_cli.click_dict_type import DictParamType
 from ocp_addons_operators_cli.constants import INSTALL_STR, SUPPORTED_ACTIONS
@@ -21,6 +22,8 @@ from ocp_addons_operators_cli.utils.operators_utils import (
     get_operators_from_user_input,
     prepare_operators,
 )
+
+LOGGER = get_logger(name=__name__)
 
 
 @click.command("installer")
@@ -112,8 +115,8 @@ Optional parameters:
 )
 @click.option("--debug", help="Enable debug logs", is_flag=True)
 def main(**kwargs):
-    click.echo(f"Click Version: {click.__version__}")
-    click.echo(f"Python Version: {sys.version}")
+    LOGGER.info(f"Click Version: {click.__version__}")
+    LOGGER.info(f"Python Version: {sys.version}")
 
     user_kwargs = kwargs
     clusters_yaml_config_file = user_kwargs.get("yaml_config_file")

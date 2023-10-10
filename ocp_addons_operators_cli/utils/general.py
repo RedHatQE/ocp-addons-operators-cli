@@ -2,10 +2,7 @@ import json
 import os
 import re
 
-import click
 import requests
-
-from ocp_addons_operators_cli.constants import ERROR_LOG_COLOR, SUCCESS_LOG_COLOR
 
 
 def set_debug_os_flags():
@@ -43,27 +40,6 @@ def extract_iibs_from_json(ocp_version, job_name):
         ].items()
         if operator_config["triggered"]
     }
-
-
-def click_echo(
-    msg, section, cluster_name=None, name=None, product=None, success=None, error=None
-):
-    log_prefix = f"Section: {section}"
-    log_prefix += f" * Cluster: {cluster_name}" if cluster_name else ""
-    log_prefix += f" * Product: {name}" if name else ""
-    log_prefix += f" * Product type: {product}" if product else ""
-
-    if success:
-        fg = SUCCESS_LOG_COLOR
-    elif error:
-        fg = ERROR_LOG_COLOR
-    else:
-        fg = "white"
-
-    click.secho(
-        f"{log_prefix}: {msg}",
-        fg=fg,
-    )
 
 
 # TODO: Move to own repository.

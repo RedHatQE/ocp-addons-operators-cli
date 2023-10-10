@@ -4,12 +4,16 @@ import click
 import yaml
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
+from simple_logger.logger import get_logger
 
-from ocp_addons_operators_cli.constants import OPERATOR_STR, TIMEOUT_60MIN
-from ocp_addons_operators_cli.utils.general import click_echo, get_iib_dict, tts
+from ocp_addons_operators_cli.constants import TIMEOUT_60MIN
+from ocp_addons_operators_cli.utils.general import get_iib_dict, tts
+
+LOGGER = get_logger(name=__name__)
 
 
 def get_operators_from_user_input(**kwargs):
+    LOGGER.info("Get operators data from user input.")
     # From CLI, we get `operator`, from YAML file we get `operators`
     operators = kwargs.get("operator", [])
     if not operators:
@@ -23,21 +27,17 @@ def get_operators_from_user_input(**kwargs):
     return operators
 
 
-def assert_operators_user_input(operators, section):
+def assert_operators_user_input(operators):
     if operators:
+        LOGGER.info("Verify operators data from user input.")
         operators_missing_kubeconfig = [
             operator["name"] for operator in operators if operator["kubeconfig"] is None
         ]
         if operators_missing_kubeconfig:
-            click_echo(
-                name=operators_missing_kubeconfig,
-                product=OPERATOR_STR,
-                section=section,
-                msg=(
-                    "`kubeconfig` is missing. Either add to operator config or pass"
-                    " `--kubeconfig`"
-                ),
-                error=True,
+            LOGGER.error(
+                "The following operators are missing `kubeconfig`:"
+                f" {operators_missing_kubeconfig}. Either add to operator config or"
+                " pass `--kubeconfig`"
             )
             raise click.Abort()
 
@@ -48,28 +48,35 @@ def assert_operators_user_input(operators, section):
         ]
 
         if operator_non_existing_kubeconfig:
-            click_echo(
-                name=operator_non_existing_kubeconfig,
-                product=OPERATOR_STR,
-                section=section,
-                msg="`kubeconfig` file does not exist.",
-                error=True,
+            LOGGER.error(
+                "The following operators kubeconfig file does not exist:"
+                f" {operator_non_existing_kubeconfig}"
+            )
+            raise click.Abort()
+
+        operators_iib_missing_token = [
+            operator["name"]
+            for operator in operators
+            if operator.get("iib") and not operator.get("brew-token")
+        ]
+        if operators_iib_missing_token:
+            LOGGER.error(
+                "The following operators will be installed using IIB:"
+                f" {operators_iib_missing_token}.`brew-token` must be provided for"
+                " operator installation using IIB."
             )
             raise click.Abort()
 
 
 def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):
+    LOGGER.info("Get cluster name from kubeconfig.")
     with open(kubeconfig) as fd:
         kubeconfig = yaml.safe_load(fd)
 
     kubeconfig_clusters = kubeconfig["clusters"]
     if len(kubeconfig_clusters) > 1:
-        click_echo(
-            name=operator_name,
-            product=OPERATOR_STR,
-            section="Prepare operators",
-            msg="Kubeconfig file contains more than one cluster.",
-            error=True,
+        LOGGER.error(
+            f"Operator: {operator_name} kubeconfig file contains more than one cluster."
         )
         raise click.Abort()
 
@@ -81,7 +88,8 @@ def prepare_operators(operators, brew_token, install):
         kubeconfig = operator["kubeconfig"]
         operator["ocp-client"] = get_client(config_file=kubeconfig)
         operator["cluster-name"] = get_cluster_name_from_kubeconfig(
-            kubeconfig=kubeconfig, operator_name=operator["name"]
+            kubeconfig=kubeconfig,
+            operator_name=operator["name"],
         )
         operator["timeout"] = tts(ts=operator.get("timeout", TIMEOUT_60MIN))
 
@@ -98,13 +106,13 @@ def prepare_operators(operators, brew_token, install):
     return operators
 
 
-def run_operator_action(operators, install, section, parallel, executor):
-    futures = []
-    processed_results = []
+def prepare_operators_action(operators, install):
+    operators_action_list = []
     operator_func = install_operator if install else uninstall_operator
 
     for operator in operators:
         name = operator["name"]
+        LOGGER.info(f"Preparing operator {name} func {operator_func}")
         action_kwargs = {
             "admin_client": operator["ocp-client"],
             "name": name,
@@ -121,18 +129,4 @@ def run_operator_action(operators, install, section, parallel, executor):
             action_kwargs["iib_index_image"] = operator.get("iib")
             action_kwargs["target_namespaces"] = operator.get("target-namespaces")
 
-        # TODO add cluster name
-        click_echo(
-            cluster_name=operator["cluster-name"],
-            name=name,
-            product=OPERATOR_STR,
-            section=section,
-            msg=f"[parallel: {parallel}]",
-        )
-
-        if parallel:
-            futures.append(executor.submit(operator_func, **action_kwargs))
-        else:
-            processed_results.append(operator_func(**action_kwargs))
-
-    return futures, processed_results
+    return operators_action_list
