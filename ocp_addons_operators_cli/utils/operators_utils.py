@@ -27,7 +27,7 @@ def get_operators_from_user_input(**kwargs):
     return operators
 
 
-def assert_operators_user_input(operators):
+def assert_operators_user_input(operators, brew_token):
     if operators:
         LOGGER.info("Verify operators data from user input.")
         operators_missing_kubeconfig = [
@@ -57,12 +57,12 @@ def assert_operators_user_input(operators):
         operators_iib_missing_token = [
             operator["name"]
             for operator in operators
-            if operator.get("iib") and not operator.get("brew-token")
+            if operator.get("iib") and not brew_token
         ]
         if operators_iib_missing_token:
             LOGGER.error(
                 "The following operators will be installed using IIB:"
-                f" {operators_iib_missing_token}.`brew-token` must be provided for"
+                " {operators_iib_missing_token}.`--brew-token` must be provided for"
                 " operator installation using IIB."
             )
             raise click.Abort()
@@ -112,7 +112,7 @@ def prepare_operators_action(operators, install):
 
     for operator in operators:
         name = operator["name"]
-        LOGGER.info(f"Preparing operator {name} func {operator_func}")
+        LOGGER.info(f"Preparing operator: {name}, func: {operator_func.__name__}")
         action_kwargs = {
             "admin_client": operator["ocp-client"],
             "name": name,
@@ -128,5 +128,7 @@ def prepare_operators_action(operators, install):
             action_kwargs["source"] = operator["source"]
             action_kwargs["iib_index_image"] = operator.get("iib")
             action_kwargs["target_namespaces"] = operator.get("target-namespaces")
+
+        operators_action_list.append((operator_func, action_kwargs))
 
     return operators_action_list

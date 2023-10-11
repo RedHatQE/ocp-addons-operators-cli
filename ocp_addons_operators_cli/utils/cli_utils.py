@@ -23,26 +23,38 @@ def abort_no_ocm_token(ocm_token, addons):
         raise click.Abort()
 
 
-def verify_user_input(**kwargs):
-    action = kwargs.get("action")
-    operators = kwargs.get("operators")
-    addons = kwargs.get("addons")
-    ocm_token = kwargs.get("ocm_token")
-
-    abort_no_ocm_token(ocm_token=ocm_token, addons=addons)
-
+def assert_action(action):
     if not action:
         LOGGER.error(
             f"'action' must be provided, supported actions: `{SUPPORTED_ACTIONS}`"
         )
         raise click.Abort()
 
+    if action not in SUPPORTED_ACTIONS:
+        LOGGER.error(
+            "Provided 'action' is not supported, supported actions:"
+            f" `{SUPPORTED_ACTIONS}`"
+        )
+        raise click.Abort()
+
+
+def verify_user_input(**kwargs):
+    action = kwargs.get("action")
+    operators = kwargs.get("operators")
+    addons = kwargs.get("addons")
+    ocm_token = kwargs.get("ocm_token")
+    brew_token = kwargs.get("brew_token")
+
+    abort_no_ocm_token(ocm_token=ocm_token, addons=addons)
+
+    assert_action(action=action)
+
     if not (operators or addons):
         LOGGER.error("At least one '--operator' or `--addon` option must be provided.")
         raise click.Abort()
 
-    assert_operators_user_input(operators=operators)
-    assert_addons_user_input(addons=addons, brew_token=kwargs.get("brew_token"))
+    assert_operators_user_input(operators=operators, brew_token=brew_token)
+    assert_addons_user_input(addons=addons, brew_token=brew_token)
 
 
 def run_install_or_uninstall_products(operators, addons, parallel, debug, install):

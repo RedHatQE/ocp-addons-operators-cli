@@ -72,7 +72,12 @@ def assert_addons_user_input(addons, brew_token):
 
         supported_envs = [STAGE_STR, PRODUCTION_STR]
         addons_wrong_env = [
-            addon["name"] for addon in addons if addon.get("ocm-evn") in supported_envs
+            addon["name"]
+            for addon in addons
+            if (
+                ocm_env := addon.get("ocm-evn")  # noqa
+                and ocm_env not in supported_envs  # noqa
+            )
         ]
         if addons_wrong_env:
             LOGGER.error(
@@ -118,8 +123,9 @@ def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
         addon["ocm-client"] = ocm_client
         cluster = Cluster(
             client=ocm_client,
-            name=addon_name,
+            name=cluster_name,
         )
+
         if cluster.exists:
             addon["cluster-object"] = cluster
         else:
@@ -137,7 +143,8 @@ def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
             addon["parameters"] = extract_addon_params(addon_dict=addon)
 
     if missing_clusters_addons:
-        LOGGER.error(f"Addons {missing_clusters_addons} cluster do not exist.")
+        LOGGER.error(f"Addons {missing_clusters_addons}: clusters do not exist.")
+        raise click.Abort()
 
     return addons
 
@@ -149,7 +156,7 @@ def prepare_addons_action(addons, install):
         addon_obj = addon["cluster-addon"]
         addon_func = addon_obj.install_addon if install else addon_obj.uninstall_addon
         name = addon["name"]
-        LOGGER.info(f"Preparing addon {name} func {addon_func}")
+        LOGGER.info(f"Preparing addon: {name}, func: {addon_func.__name__}")
 
         action_kwargs = {
             "wait": True,

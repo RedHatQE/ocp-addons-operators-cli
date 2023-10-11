@@ -23,7 +23,7 @@ from ocp_addons_operators_cli.utils.operators_utils import (
     prepare_operators,
 )
 
-LOGGER = get_logger(name=__name__)
+LOGGER = get_logger(name=os.path.split(__file__)[-1])
 
 
 @click.command("installer")
@@ -119,11 +119,11 @@ def main(**kwargs):
     LOGGER.info(f"Python Version: {sys.version}")
 
     user_kwargs = kwargs
-    clusters_yaml_config_file = user_kwargs.get("yaml_config_file")
-    if clusters_yaml_config_file:
+    yaml_config_file = user_kwargs.get("yaml_config_file")
+    if yaml_config_file:
         # Update CLI user input from YAML file if exists
         # Since CLI user input has some defaults, YAML file will override them
-        user_kwargs.update(parse_config(path=clusters_yaml_config_file))
+        user_kwargs.update(parse_config(path=yaml_config_file))
 
     action = user_kwargs.get("action")
     operators = get_operators_from_user_input(**user_kwargs)
