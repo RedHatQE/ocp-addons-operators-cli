@@ -80,7 +80,7 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
             action_func = product_action_tuple[0]
             action_kwargs = product_action_tuple[1]
             if parallel:
-                futures.append(executor.submit(action_func(), **action_kwargs))
+                futures.append(executor.submit(action_func, **action_kwargs))
             else:
                 processed_results.append(action_func(**action_kwargs))
 
