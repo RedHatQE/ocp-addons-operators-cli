@@ -75,6 +75,7 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
             install=install,
         )
 
+        LOGGER.info(f"Running products installation; parallel: {parallel}")
         for product_action_tuple in addons_action_list + operators_action_list:
             action_func = product_action_tuple[0]
             action_kwargs = product_action_tuple[1]
