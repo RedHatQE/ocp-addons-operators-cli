@@ -15,11 +15,10 @@ LOGGER = get_logger(name=__name__)
 def get_operators_from_user_input(**kwargs):
     LOGGER.info("Get operators data from user input.")
     # From CLI, we get `operator`, from YAML file we get `operators`
-    operators = kwargs.get("operator", [])
-    if not operators:
-        operators = kwargs.get("operators", [])
+    operators = kwargs.get("operator", kwargs.get("operators", []))
 
     for operator in operators:
+        # Get kubeconfig from global config if not passed as operator config
         if not operator.get("kubeconfig"):
             operator["kubeconfig"] = kwargs.get("kubeconfig")
         operator["brew-token"] = kwargs.get("brew_token")
@@ -27,45 +26,63 @@ def get_operators_from_user_input(**kwargs):
     return operators
 
 
+def assert_missing_kubeconfig_from_user_input(operators):
+    LOGGER.info("Verify `kubeconfig` is not missing from user input.")
+    operators_missing_kubeconfig = [
+        operator["name"] for operator in operators if operator["kubeconfig"] is None
+    ]
+    if operators_missing_kubeconfig:
+        LOGGER.error(
+            "The following operators are missing `kubeconfig`:"
+            f" {operators_missing_kubeconfig}. Either add to operator config or"
+            " pass `--kubeconfig`"
+        )
+        raise click.Abort()
+
+
+def assert_missing_kubeconfig_file(operators):
+    LOGGER.info("Verify `kubeconfig` file(s) exist.")
+    operator_non_existing_kubeconfig = [
+        operator["name"]
+        for operator in operators
+        if not os.path.exists(operator["kubeconfig"])
+    ]
+
+    if operator_non_existing_kubeconfig:
+        LOGGER.error(
+            "The following operators kubeconfig file does not exist:"
+            f" {operator_non_existing_kubeconfig}"
+        )
+        raise click.Abort()
+
+
+def assert_missing_token_for_iib_installation(operators, brew_token):
+    LOGGER.info(
+        "Verify `brew token` is not missing from user input for operators IIB"
+        " installation."
+    )
+    operators_iib_missing_token = [
+        operator["name"]
+        for operator in operators
+        if operator.get("iib") and not brew_token
+    ]
+    if operators_iib_missing_token:
+        LOGGER.error(
+            "The following operators will be installed using IIB:"
+            " {operators_iib_missing_token}.`--brew-token` must be provided for"
+            " operator installation using IIB."
+        )
+        raise click.Abort()
+
+
 def assert_operators_user_input(operators, brew_token):
     if operators:
         LOGGER.info("Verify operators data from user input.")
-        operators_missing_kubeconfig = [
-            operator["name"] for operator in operators if operator["kubeconfig"] is None
-        ]
-        if operators_missing_kubeconfig:
-            LOGGER.error(
-                "The following operators are missing `kubeconfig`:"
-                f" {operators_missing_kubeconfig}. Either add to operator config or"
-                " pass `--kubeconfig`"
-            )
-            raise click.Abort()
-
-        operator_non_existing_kubeconfig = [
-            operator["name"]
-            for operator in operators
-            if not os.path.exists(operator["kubeconfig"])
-        ]
-
-        if operator_non_existing_kubeconfig:
-            LOGGER.error(
-                "The following operators kubeconfig file does not exist:"
-                f" {operator_non_existing_kubeconfig}"
-            )
-            raise click.Abort()
-
-        operators_iib_missing_token = [
-            operator["name"]
-            for operator in operators
-            if operator.get("iib") and not brew_token
-        ]
-        if operators_iib_missing_token:
-            LOGGER.error(
-                "The following operators will be installed using IIB:"
-                " {operators_iib_missing_token}.`--brew-token` must be provided for"
-                " operator installation using IIB."
-            )
-            raise click.Abort()
+        assert_missing_kubeconfig_from_user_input(operators=operators)
+        assert_missing_kubeconfig_file(operators=operators)
+        assert_missing_token_for_iib_installation(
+            operators=operators, brew_token=brew_token
+        )
 
 
 def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):

@@ -46,61 +46,76 @@ def extract_addon_params(addon_dict):
 def get_addons_from_user_input(**kwargs):
     LOGGER.info("Get addon parameters from user input.")
     # From CLI, we get `addon`, from YAML file we get `addons`
-    addons = kwargs.get("addon", [])
-    if not addons:
-        addons = kwargs.get("addons", [])
+    addons = kwargs.get("addon", kwargs.get("addons", []))
 
     for addon in addons:
+        # Get cluster name from global config if not passed as addon config
         if not addon.get("cluster-name"):
             addon["cluster-name"] = kwargs.get("cluster_name")
 
     return addons
 
 
+def assert_missing_cluster_names(addons):
+    LOGGER.info("Verify `cluster name` is not missing from user input.")
+    addons_missing_cluster_name = [
+        addon["name"] for addon in addons if not addon.get("cluster-name")
+    ]
+    if addons_missing_cluster_name:
+        LOGGER.error(
+            f"For addons {addons_missing_cluster_name} `cluster-name` is missing. "
+            "Either add to addon config or pass `--cluster-name`"
+        )
+        raise click.Abort()
+
+
+def assert_invalid_ocm_env(addons):
+    LOGGER.info("Verify `ocm env` is supported.")
+    supported_envs = [STAGE_STR, PRODUCTION_STR]
+    addons_wrong_env = [
+        addon["name"]
+        for addon in addons
+        if (
+            ocm_env := addon.get("ocm-evn")  # noqa
+            and ocm_env not in supported_envs  # noqa
+        )
+    ]
+    if addons_wrong_env:
+        LOGGER.error(
+            f"Addons {addons_wrong_env} have wrong OCM environment. Supported envs:"
+            f" {supported_envs}"
+        )
+        raise click.Abort()
+
+
+def assert_missing_managed_odh_brew_token(addons, brew_token):
+    managed_odh_str = "managed-odh"
+    LOGGER.info(
+        "Verify `brew token` is not missing from user input for addon"
+        f" `{managed_odh_str}` installation in {STAGE_STR}."
+    )
+    if (
+        any(
+            [
+                addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR
+                for addon in addons
+            ]
+        )
+        and not brew_token
+    ):
+        LOGGER.error(
+            f"{managed_odh_str} addon on {STAGE_STR} requires brew token. Pass"
+            " `--brew-token`"
+        )
+        raise click.Abort()
+
+
 def assert_addons_user_input(addons, brew_token):
     if addons:
         LOGGER.info("Verify addons data from user input.")
-        addons_missing_cluster_name = [
-            addon["name"] for addon in addons if not addon.get("cluster-name")
-        ]
-        if addons_missing_cluster_name:
-            LOGGER.error(
-                f"For addons {addons_missing_cluster_name} `cluster-name` is missing. "
-                "Either add to addon config or pass `--cluster-name`"
-            )
-            raise click.Abort()
-
-        supported_envs = [STAGE_STR, PRODUCTION_STR]
-        addons_wrong_env = [
-            addon["name"]
-            for addon in addons
-            if (
-                ocm_env := addon.get("ocm-evn")  # noqa
-                and ocm_env not in supported_envs  # noqa
-            )
-        ]
-        if addons_wrong_env:
-            LOGGER.error(
-                f"Addons {addons_wrong_env} have wrong OCM environment. Supported envs:"
-                f" {supported_envs}"
-            )
-            raise click.Abort()
-
-        managed_odh_str = "managed-odh"
-        if (
-            any(
-                [
-                    addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR
-                    for addon in addons
-                ]
-            )
-            and not brew_token
-        ):
-            LOGGER.error(
-                f"{managed_odh_str} addon on {STAGE_STR} requires brew token. Pass"
-                " `--brew-token`"
-            )
-            raise click.Abort()
+        assert_missing_cluster_names(addons=addons)
+        assert_invalid_ocm_env(addons=addons)
+        assert_missing_managed_odh_brew_token(addons=addons, brew_token=brew_token)
 
 
 def prepare_addons(addons, ocm_token, endpoint, brew_token, install):

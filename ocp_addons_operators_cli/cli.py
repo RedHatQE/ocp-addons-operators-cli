@@ -170,4 +170,4 @@ if __name__ == "__main__":
         main()
     finally:
         elapsed_time = datetime.timedelta(seconds=time.time() - start_time)
-        click.secho(f"Total execution time: {elapsed_time}", fg="green", bold=True)
+        LOGGER.info(f"Total execution time: {elapsed_time}")

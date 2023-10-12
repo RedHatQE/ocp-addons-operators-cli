@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import click
 from simple_logger.logger import get_logger
 
-from ocp_addons_operators_cli.constants import ERROR_LOG_COLOR, SUPPORTED_ACTIONS
+from ocp_addons_operators_cli.constants import SUPPORTED_ACTIONS
 from ocp_addons_operators_cli.utils.addons_utils import (
     assert_addons_user_input,
     prepare_addons_action,
@@ -88,14 +88,19 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
         for result in as_completed(futures):
             if result.exception():
                 # TODO: Add cluster name, product name and type to threads
-                click.secho(
+                LOGGER.error(
                     f"Failed to {'install' if install else 'uninstall'}:"
                     f" {result.exception()}\n",
-                    fg=ERROR_LOG_COLOR,
                 )
                 raise click.Abort()
             processed_results.append(result.result())
 
+    addon_names = [addon["name"] for addon in addons]
+    operator_names = [operator["name"] for operator in operators]
+    LOGGER.info(
+        f"Successfully installed {f'addons: {addon_names}' if addons else ''} "
+        f"{f'operators: {operator_names}' if operators else ''}"
+    )
     return processed_results
 
 
