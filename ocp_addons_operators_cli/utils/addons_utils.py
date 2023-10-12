@@ -46,7 +46,7 @@ def extract_addon_params(addon_dict):
 def get_addons_from_user_input(**kwargs):
     LOGGER.info("Get addon parameters from user input.")
     # From CLI, we get `addon`, from YAML file we get `addons`
-    addons = kwargs.get("addon", kwargs.get("addons", []))
+    addons = kwargs.get("addon") or kwargs.get("addons", [])
 
     for addon in addons:
         # Get cluster name from global config if not passed as addon config
@@ -72,14 +72,16 @@ def assert_missing_cluster_names(addons):
 def assert_invalid_ocm_env(addons):
     LOGGER.info("Verify `ocm env` is supported.")
     supported_envs = [STAGE_STR, PRODUCTION_STR]
-    addons_wrong_env = [
-        addon["name"]
+
+    addons_wrong_env = {
+        addon["name"]: ocm_env
         for addon in addons
         if (
-            ocm_env := addon.get("ocm-evn")  # noqa
+            (ocm_env := addon.get("ocm-env"))  # noqa
             and ocm_env not in supported_envs  # noqa
         )
-    ]
+    }
+
     if addons_wrong_env:
         LOGGER.error(
             f"Addons {addons_wrong_env} have wrong OCM environment. Supported envs:"
@@ -119,6 +121,7 @@ def assert_addons_user_input(addons, brew_token):
 
 
 def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
+    LOGGER.info("Preparing addons dict")
     missing_clusters_addons = []
     for addon in addons:
         addon_name = addon["name"]

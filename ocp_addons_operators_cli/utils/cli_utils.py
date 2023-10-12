@@ -18,12 +18,14 @@ LOGGER = get_logger(name=__name__)
 
 
 def abort_no_ocm_token(ocm_token, addons):
+    LOGGER.info("Verify OCM TOKEN is not missing from user input")
     if addons and not ocm_token:
         LOGGER.error("`--ocm-token` is required for addon installation")
         raise click.Abort()
 
 
 def assert_action(action):
+    LOGGER.info("Verify `action` from user input")
     if not action:
         LOGGER.error(
             f"'action' must be provided, supported actions: `{SUPPORTED_ACTIONS}`"
@@ -63,6 +65,7 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
 
     futures = []
     processed_results = []
+    action = "install" if install else "uninstall"
 
     with ThreadPoolExecutor() as executor:
         operators_action_list = prepare_operators_action(
@@ -89,8 +92,7 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
             if result.exception():
                 # TODO: Add cluster name, product name and type to threads
                 LOGGER.error(
-                    f"Failed to {'install' if install else 'uninstall'}:"
-                    f" {result.exception()}\n",
+                    f"Failed to {action}: {result.exception()}\n",
                 )
                 raise click.Abort()
             processed_results.append(result.result())
@@ -98,13 +100,14 @@ def run_install_or_uninstall_products(operators, addons, parallel, debug, instal
     addon_names = [addon["name"] for addon in addons]
     operator_names = [operator["name"] for operator in operators]
     LOGGER.info(
-        f"Successfully installed {f'addons: {addon_names}' if addons else ''} "
+        f"Successfully {action} {f'addons: {addon_names}' if addons else ''} "
         f"{f'operators: {operator_names}' if operators else ''}"
     )
     return processed_results
 
 
 def set_parallel(user_input_parallel, operators, addons):
+    LOGGER.info("Setting `parallel` option")
     if len(operators + addons) > 1:
         return user_input_parallel
 

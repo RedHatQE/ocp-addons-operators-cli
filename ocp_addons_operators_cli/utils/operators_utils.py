@@ -15,7 +15,7 @@ LOGGER = get_logger(name=__name__)
 def get_operators_from_user_input(**kwargs):
     LOGGER.info("Get operators data from user input.")
     # From CLI, we get `operator`, from YAML file we get `operators`
-    operators = kwargs.get("operator", kwargs.get("operators", []))
+    operators = kwargs.get("operator") or kwargs.get("operators", [])
 
     for operator in operators:
         # Get kubeconfig from global config if not passed as operator config
@@ -101,6 +101,7 @@ def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):
 
 
 def prepare_operators(operators, brew_token, install):
+    LOGGER.info("Preparing operators dict")
     for operator in operators:
         kubeconfig = operator["kubeconfig"]
         operator["ocp-client"] = get_client(config_file=kubeconfig)
