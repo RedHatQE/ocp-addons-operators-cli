@@ -214,6 +214,6 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli \
     --kubeconfig ~/work/CSPI/kubeconfig/rosa-myk412 \
     -t $OCM_TOKEN \
     -c cluster1 \
-    -a 'name=ocm-addon-test-operator;has-external-resources=false;aws-cluster-test-param=false' \
+    -a 'name=ocm-addon-test-operator;has-external-resources=false;aws-cluster-test-param=false;ocm-env=stage' \
     -o 'name=servicemeshoperator;timeout=600'
 ```
