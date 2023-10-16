@@ -45,8 +45,8 @@ def extract_addon_params(addon_dict):
 
 def get_addons_from_user_input(**kwargs):
     LOGGER.info("Get addon parameters from user input.")
-    # From CLI, we get `addon`, from YAML file we get `addons`
-    addons = kwargs.get("addon") or kwargs.get("addons", [])
+    # From CLI, we get `addon` tuple, from YAML file we get `addons` list
+    addons = [*kwargs.get("addon")] or kwargs.get("addons", [])
 
     for addon in addons:
         # Get cluster name from global config if not passed as addon config

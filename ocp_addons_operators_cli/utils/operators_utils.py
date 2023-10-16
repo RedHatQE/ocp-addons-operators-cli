@@ -14,8 +14,8 @@ LOGGER = get_logger(name=__name__)
 
 def get_operators_from_user_input(**kwargs):
     LOGGER.info("Get operators data from user input.")
-    # From CLI, we get `operator`, from YAML file we get `operators`
-    operators = kwargs.get("operator") or kwargs.get("operators", [])
+    # From CLI, we get `operator` tuple, from YAML file we get `operators` list
+    operators = [*kwargs.get("operator")] or kwargs.get("operators", [])
 
     for operator in operators:
         # Get kubeconfig from global config if not passed as operator config
