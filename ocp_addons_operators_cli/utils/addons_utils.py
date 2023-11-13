@@ -97,12 +97,10 @@ def assert_missing_managed_odh_brew_token(addons, brew_token):
         f" `{managed_odh_str}` installation in {STAGE_STR}."
     )
     if (
-        any(
-            [
-                addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR
-                for addon in addons
-            ]
-        )
+        any([
+            addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR
+            for addon in addons
+        ])
         and not brew_token
     ):
         LOGGER.error(
