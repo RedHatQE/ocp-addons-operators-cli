@@ -35,9 +35,7 @@ def extract_iibs_from_json(ocp_version, job_name):
         raise ValueError(f"Missing {ocp_version} / {job_name} in {iib_dict}")
     return {
         operator_name: operator_config["iib"]
-        for operator_name, operator_config in iib_dict[ocp_version_str][
-            job_name
-        ].items()
+        for operator_name, operator_config in iib_dict[ocp_version_str][job_name].items()
         if operator_config["triggered"]
     }
 
@@ -79,11 +77,7 @@ def tts(ts):
 
 def get_iib_dict():
     ocp_version = os.environ.get("OCP_VERSION")
-    job_name = (
-        os.environ.get("JOB_NAME")
-        if os.environ.get("INSTALL_FROM_IIB") == "true"
-        else None
-    )
+    job_name = os.environ.get("JOB_NAME") if os.environ.get("INSTALL_FROM_IIB") == "true" else None
     _iib_dict = {}
     if ocp_version and job_name:
         _iib_dict = extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name)

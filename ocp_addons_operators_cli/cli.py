@@ -144,9 +144,7 @@ def main(**kwargs):
 
     verify_user_input(**user_kwargs)
 
-    operators = prepare_operators(
-        operators=operators, brew_token=brew_token, install=install
-    )
+    operators = prepare_operators(operators=operators, brew_token=brew_token, install=install)
     addons = prepare_addons(
         addons=addons,
         ocm_token=ocm_token,

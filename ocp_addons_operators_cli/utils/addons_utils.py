@@ -58,9 +58,7 @@ def get_addons_from_user_input(**kwargs):
 
 def assert_missing_cluster_names(addons):
     LOGGER.info("Verify `cluster name` is not missing from user input.")
-    addons_missing_cluster_name = [
-        addon["name"] for addon in addons if not addon.get("cluster-name")
-    ]
+    addons_missing_cluster_name = [addon["name"] for addon in addons if not addon.get("cluster-name")]
     if addons_missing_cluster_name:
         LOGGER.error(
             f"For addons {addons_missing_cluster_name} `cluster-name` is missing. "
@@ -83,10 +81,7 @@ def assert_invalid_ocm_env(addons):
     }
 
     if addons_wrong_env:
-        LOGGER.error(
-            f"Addons {addons_wrong_env} have wrong OCM environment. Supported envs:"
-            f" {supported_envs}"
-        )
+        LOGGER.error(f"Addons {addons_wrong_env} have wrong OCM environment. Supported envs:" f" {supported_envs}")
         raise click.Abort()
 
 
@@ -96,17 +91,8 @@ def assert_missing_managed_odh_brew_token(addons, brew_token):
         "Verify `brew token` is not missing from user input for addon"
         f" `{managed_odh_str}` installation in {STAGE_STR}."
     )
-    if (
-        any([
-            addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR
-            for addon in addons
-        ])
-        and not brew_token
-    ):
-        LOGGER.error(
-            f"{managed_odh_str} addon on {STAGE_STR} requires brew token. Pass"
-            " `--brew-token`"
-        )
+    if any([addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR for addon in addons]) and not brew_token:
+        LOGGER.error(f"{managed_odh_str} addon on {STAGE_STR} requires brew token. Pass" " `--brew-token`")
         raise click.Abort()
 
 
@@ -148,9 +134,7 @@ def prepare_addons(addons, ocm_token, endpoint, brew_token, install):
             missing_clusters_addons.append(addon_name)
 
         try:
-            addon["cluster-addon"] = ClusterAddOn(
-                client=ocm_client, cluster_name=cluster_name, addon_name=addon_name
-            )
+            addon["cluster-addon"] = ClusterAddOn(client=ocm_client, cluster_name=cluster_name, addon_name=addon_name)
         except NotFoundException as exc:
             LOGGER.error(f"Failed to get addon for cluster {cluster_name} on {exc}.")
             raise click.Abort()

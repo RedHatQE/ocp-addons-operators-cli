@@ -27,16 +27,11 @@ def abort_no_ocm_token(ocm_token, addons):
 def assert_action(action):
     LOGGER.info("Verify `action` from user input")
     if not action:
-        LOGGER.error(
-            f"'action' must be provided, supported actions: `{SUPPORTED_ACTIONS}`"
-        )
+        LOGGER.error(f"'action' must be provided, supported actions: `{SUPPORTED_ACTIONS}`")
         raise click.Abort()
 
     if action not in SUPPORTED_ACTIONS:
-        LOGGER.error(
-            "Provided 'action' is not supported, supported actions:"
-            f" `{SUPPORTED_ACTIONS}`"
-        )
+        LOGGER.error("Provided 'action' is not supported, supported actions:" f" `{SUPPORTED_ACTIONS}`")
         raise click.Abort()
 
 
