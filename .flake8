@@ -9,3 +9,12 @@ exclude =
     Pipfile.*,
     docs/*,
     .cache/*
+
+fcn_exclude_functions =
+    LOGGER,
+    yaml,
+    json,
+    logging,
+
+enable-extensions =
+    FCN,
