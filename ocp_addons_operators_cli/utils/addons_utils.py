@@ -81,7 +81,7 @@ def assert_invalid_ocm_env(addons):
     }
 
     if addons_wrong_env:
-        LOGGER.error(f"Addons {addons_wrong_env} have wrong OCM environment. Supported envs:" f" {supported_envs}")
+        LOGGER.error(f"Addons {addons_wrong_env} have wrong OCM environment. Supported envs: {supported_envs}")
         raise click.Abort()
 
 
@@ -92,7 +92,7 @@ def assert_missing_managed_odh_brew_token(addons, brew_token):
         f" `{managed_odh_str}` installation in {STAGE_STR}."
     )
     if any([addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR for addon in addons]) and not brew_token:
-        LOGGER.error(f"{managed_odh_str} addon on {STAGE_STR} requires brew token. Pass" " `--brew-token`")
+        LOGGER.error(f"{managed_odh_str} addon on {STAGE_STR} requires brew token. Pass `--brew-token`")
         raise click.Abort()
 
 

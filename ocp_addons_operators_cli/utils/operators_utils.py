@@ -45,12 +45,12 @@ def assert_missing_kubeconfig_file(operators):
     ]
 
     if operator_non_existing_kubeconfig:
-        LOGGER.error("The following operators kubeconfig file does not exist:" f" {operator_non_existing_kubeconfig}")
+        LOGGER.error("The following operators kubeconfig file does not exist: {operator_non_existing_kubeconfig}")
         raise click.Abort()
 
 
 def assert_missing_token_for_iib_installation(operators, brew_token):
-    LOGGER.info("Verify `brew token` is not missing from user input for operators IIB" " installation.")
+    LOGGER.info("Verify `brew token` is not missing from user input for operators IIB installation.")
     operators_iib_missing_token = [operator["name"] for operator in operators if operator.get("iib") and not brew_token]
     if operators_iib_missing_token:
         LOGGER.error(

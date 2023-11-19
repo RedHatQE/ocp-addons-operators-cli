@@ -31,7 +31,7 @@ def assert_action(action):
         raise click.Abort()
 
     if action not in SUPPORTED_ACTIONS:
-        LOGGER.error("Provided 'action' is not supported, supported actions:" f" `{SUPPORTED_ACTIONS}`")
+        LOGGER.error("Provided 'action' is not supported, supported actions: `{SUPPORTED_ACTIONS}`")
         raise click.Abort()
 
 
