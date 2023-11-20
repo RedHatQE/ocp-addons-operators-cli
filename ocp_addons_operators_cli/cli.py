@@ -1,4 +1,3 @@
-import datetime
 import os
 import sys
 import time
@@ -114,6 +113,12 @@ Optional parameters:
     show_default=True,
 )
 @click.option("--debug", help="Enable debug logs", is_flag=True)
+@click.option(
+    "--pdb",
+    help="Drop to `ipdb` shell on exception",
+    is_flag=True,
+    show_default=True,
+)
 def main(**kwargs):
     LOGGER.info(f"Click Version: {click.__version__}")
     LOGGER.info(f"Python Version: {sys.version}")
@@ -164,8 +169,23 @@ def main(**kwargs):
 
 if __name__ == "__main__":
     start_time = time.time()
+    should_raise = False
+    _logger = get_logger(name="main-openshift-cli-installer")
     try:
         main()
+    except Exception as ex:
+        import traceback
+
+        ipdb = __import__("ipdb")  # Bypass debug-statements pre-commit hook
+
+        if "--pdb" in sys.argv:
+            extype, value, tb = sys.exc_info()
+            traceback.print_exc()
+            ipdb.post_mortem(tb)
+        else:
+            _logger.error(ex)
+            should_raise = True
     finally:
-        elapsed_time = datetime.timedelta(seconds=time.time() - start_time)
-        LOGGER.info(f"Total execution time: {elapsed_time}")
+        _logger.info("Total execution time: {datetime.timedelta(seconds=time.time() - start_time)}")
+        if should_raise:
+            sys.exit(1)
