@@ -11,9 +11,12 @@ exclude = [".git", ".venv", ".mypy_cache", ".tox", "__pycache__"]
 name = "ocp-addons-operators-cli"
 version = "1.0.0"
 description = "CLI to install/uninstall Addons/operators on Openshift clusters."
-authors = ["Meni Yakove <myakove@gmail.com>", "Ruth Netser <ruth.netser@gmail.com>"]
-packages = [{include = "ocp_addons_operators_cli"}]
-include = [{path = "manifests/*"}]
+authors = [
+  "Meni Yakove <myakove@gmail.com>",
+  "Ruth Netser <ruth.netser@gmail.com>",
+]
+packages = [{ include = "ocp_addons_operators_cli" }]
+include = [{ path = "manifests/*" }]
 readme = "README.md"
 repository = "https://github.com/RedHatQE/ocp-addons-operators-cli"
 
@@ -24,7 +27,7 @@ cli = "app.cli:main"
 python = "^3.8"
 openshift-cluster-management-python-wrapper = "^1.0.21"
 colorlog = "^6.7.0"
-openshift-python-wrapper = "^4.14.1"
+openshift-python-wrapper = "^4.15.13"
 openshift-python-utilities = "^5.0.0"
 click = "^8.1.4"
 pyaml-env = "^1.2.1"
