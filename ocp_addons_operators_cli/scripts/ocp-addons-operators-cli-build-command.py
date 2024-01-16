@@ -15,6 +15,16 @@ def main():
         cmd += f" --cluster-name={cluster_name}"
     if os_env.get("PARALLEL") == "true":
         cmd += " --parallel"
+    if ocm_token := os_env.get("OCM_TOKEN"):
+        cmd += f" --ocm-token={ocm_token}"
+    if brew_token := os_env.get("BREW_TOKEN"):
+        cmd += f" --brew-token={brew_token}"
+    if must_gather := os_env.get("MUST_GATHER_OUTPUT_DIR"):
+        cmd += f" --must-gather-output-dir={must_gather}"
+    if endpoint := os_env.get("ENDPOINT"):
+        cmd += f" --endpoint={endpoint}"
+    if kubeconfig := os_env.get("KUBECONFIG"):
+        cmd += f" --kubeconfig={kubeconfig}"
 
     if addon1 := os_env.get("ADDON1"):
         addons += f" --addon='{addon1}'"
@@ -39,15 +49,6 @@ def main():
         operators += f" --operator='{operator5}'"
 
     cmd += f" {operators} {addons}"
-
-    if ocm_token := os_env.get("OCM_TOKEN"):
-        cmd += f" --ocm-token={ocm_token}"
-    if brew_token := os_env.get("BREW_TOKEN"):
-        cmd += f" --brew-token={brew_token}"
-    if must_gather := os_env.get("MUST_GATHER_OUTPUT_DIR"):
-        cmd += f" --must-gather-output-dir={must_gather}"
-    if endpoint := os_env.get("ENDPOINT"):
-        cmd += f" --endpoint={endpoint}"
 
     print(cmd)
 
