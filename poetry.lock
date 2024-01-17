@@ -602,13 +602,13 @@ files = [
 
 [[package]]
 name = "kubernetes"
-version = "28.1.0"
+version = "29.0.0"
 description = "Kubernetes python client"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "kubernetes-28.1.0-py2.py3-none-any.whl", hash = "sha256:10f56f8160dcb73647f15fafda268e7f60cf7dbc9f8e46d52fcd46d3beb0c18d"},
-    {file = "kubernetes-28.1.0.tar.gz", hash = "sha256:1468069a573430fb1cb5ad22876868f57977930f80a6749405da31cd6086a7e9"},
+    {file = "kubernetes-29.0.0-py2.py3-none-any.whl", hash = "sha256:ab8cb0e0576ccdfb71886366efb102c6a20f268d817be065ce7f9909c631e43e"},
+    {file = "kubernetes-29.0.0.tar.gz", hash = "sha256:c4812e227ae74d07d53c88293e564e54b850452715a59a927e7e1bc6b9a60459"},
 ]
 
 [package.dependencies]
@@ -620,7 +620,7 @@ pyyaml = ">=5.4.1"
 requests = "*"
 requests-oauthlib = "*"
 six = ">=1.9.0"
-urllib3 = ">=1.24.2,<2.0"
+urllib3 = ">=1.24.2"
 websocket-client = ">=0.32.0,<0.40.0 || >0.40.0,<0.41.dev0 || >=0.43.dev0"
 
 [package.extras]
@@ -741,27 +741,26 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.61"
+version = "1.0.28"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.8"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.61.tar.gz", hash = "sha256:f084e8e0f1ce74cc6e37c06bbe0991832957f5361ec888887f66a8ed766a4155"},
+    {file = "openshift-cluster-management-python-wrapper-1.0.28.tar.gz", hash = "sha256:b2c1736d88c0732bf572d5131c8e9326e70c334a81f9d4739e92bcfce36fb8c4"},
 ]
 
 [package.dependencies]
-colorlog = ">=6.7.0,<7.0.0"
-importlib = ">=1.0.4,<2.0.0"
-openshift-cluster-management-python-client = ">=1.0.23,<2.0.0"
-openshift-python-utilities = ">=5.0.0,<6.0.0"
-openshift-python-wrapper = ">=4.14.4,<5.0.0"
-python-benedict = ">=0.33.0,<0.34.0"
-python-simple-logger = ">=1.0.5,<2.0.0"
-pyyaml = ">=6.0.1,<7.0.0"
-redhat-qe-cloud-tools = ">=1.0.10,<2.0.0"
-requests = ">=2.31.0,<3.0.0"
-rosa-python-client = ">=1.0.28,<2.0.0"
-timeout-sampler = ">=0.0.1,<0.0.2"
+colorlog = "*"
+importlib = "*"
+openshift-cluster-management-python-client = "*"
+openshift-python-utilities = "*"
+openshift-python-wrapper = "*"
+python-benedict = "*"
+python-simple-logger = "*"
+pyyaml = "*"
+redhat-qe-cloud-tools = "*"
+requests = "*"
+rosa-python-client = "*"
 
 [[package]]
 name = "openshift-python-utilities"
@@ -784,35 +783,36 @@ timeout-sampler = ">=0.0.1,<0.0.2"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "4.15.18"
+version = "10.0.0"
 description = "Wrapper around https://github.com/kubernetes-client/python"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_python_wrapper-4.15.18.tar.gz", hash = "sha256:2af6f6e42f36fe4b9136e895e4a631d56f3b710c616b6c0f887dc2eb9a9c46b8"},
+    {file = "openshift_python_wrapper-10.0.0.tar.gz", hash = "sha256:5b8c08802e14c91d477215f0f3e886c3bc5c6e0fec0ac3bf1c054fcd2250d95d"},
 ]
 
 [package.dependencies]
 colorlog = ">=6.7.0,<7.0.0"
 jinja2 = ">=3.1.2,<4.0.0"
-kubernetes = ">=28.0.0,<29.0.0"
+kubernetes = ">=29.0.0,<30.0.0"
 packaging = ">=23.1,<24.0"
 python-benedict = ">=0.33.0,<0.34.0"
 python-simple-logger = ">=1.0.6,<2.0.0"
+timeout-sampler = ">=0.0.1,<0.0.2"
 xmltodict = ">=0.13.0,<0.14.0"
 
 [[package]]
 name = "openshift-python-wrapper-data-collector"
-version = "1.0.5"
+version = "1.0.7"
 description = "Data collector for https://github.com/openshift/openshift-python-wrapper when running with PyTest"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_python_wrapper_data_collector-1.0.5.tar.gz", hash = "sha256:9d44743aa6b28aac9c59ddbfacda8306bbe5bab19b9be481c517dc3cd6f5bd50"},
+    {file = "openshift_python_wrapper_data_collector-1.0.7.tar.gz", hash = "sha256:cf081513aa4ce71f86cd2b4a4bab57198604ebdfcb33a07f13ae1fe640f5b8b8"},
 ]
 
 [package.dependencies]
-openshift-python-wrapper = ">=4.14.21,<5.0.0"
+openshift-python-wrapper = ">=10.0.0,<11.0.0"
 pyyaml = ">=6.0.1,<7.0.0"
 
 [[package]]
@@ -1444,4 +1444,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "29fec71d901323120bbe532d69e850f1a06147dac4e994901d7edd4eebd0ab08"
+content-hash = "d7ec275b09489a2170dcc1a08f2cfa229cd7aa770ff4d022ab208f45d870c5e8"
