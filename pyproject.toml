@@ -25,13 +25,13 @@ cli = "app.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-openshift-cluster-management-python-wrapper = ">=1.0.21"
+openshift-cluster-management-python-wrapper = "^1.0.21"
 colorlog = "^6.7.0"
-openshift-python-wrapper = ">=10.0.0"
-openshift-python-utilities = ">=5.0.0"
+openshift-python-wrapper = "^10.0.0"
+openshift-python-utilities = "^5.0.0"
 click = "^8.1.4"
 pyaml-env = "^1.2.1"
-python-simple-logger = ">=1.0.7"
+python-simple-logger = "^1.0.7"
 
 [tool.poetry.dev-dependencies]
 ipython = "*"
