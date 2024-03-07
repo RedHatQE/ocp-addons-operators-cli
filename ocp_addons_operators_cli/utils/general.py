@@ -77,9 +77,13 @@ def tts(ts):
 
 def get_iib_dict():
     ocp_version = os.environ.get("OCP_VERSION")
-    job_name = os.environ.get("JOB_NAME") if os.environ.get("INSTALL_FROM_IIB") == "true" else None
-    _iib_dict = {}
-    if ocp_version and job_name:
-        _iib_dict = extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name)
+    job_name = (
+        os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
+        if os.environ.get("INSTALL_FROM_IIB") == "true"
+        else None
+    )
 
-    return _iib_dict
+    if ocp_version and job_name:
+        return extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name)
+
+    return {}
