@@ -14,7 +14,6 @@ from ocp_addons_operators_cli.utils.addons_utils import (
     prepare_addons,
 )
 from ocp_addons_operators_cli.utils.cli_utils import (
-    get_iib_config_params,
     run_install_or_uninstall_products,
     set_parallel,
     verify_user_input,
@@ -131,7 +130,7 @@ must-gather will try to collect data when addon/operator installation fails and 
     is_flag=True,
     show_default=True,
 )
-@click.option("--operators-latest-iib-path", help="Path to IIB json file", type=click.Path(exists=True))
+@click.option("--local-operators-latest-iib-path", help="Path to local IIB json file", type=click.Path(exists=True))
 @click.option("--s3-bucket-operators-latest-iib-path", help="s3 bucket operators latest iib json path")
 @click.option(
     "--aws-access-key-id",
@@ -175,7 +174,6 @@ def main(**kwargs):
     install = action == INSTALL_STR
     user_kwargs["install"] = install
     must_gather_output_dir = user_kwargs.get("must_gather_output_dir")
-    iib_config_params = get_iib_config_params(**user_kwargs)
 
     verify_user_input(**user_kwargs)
 
@@ -184,7 +182,7 @@ def main(**kwargs):
         brew_token=brew_token,
         install=install,
         must_gather_output_dir=must_gather_output_dir,
-        iib_config_params=iib_config_params,
+        **user_kwargs,
     )
     addons = prepare_addons(
         addons=addons,

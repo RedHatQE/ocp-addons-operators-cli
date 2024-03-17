@@ -82,7 +82,7 @@ def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):
     return kubeconfig_clusters[0]["name"]
 
 
-def prepare_operators(operators, brew_token, install, must_gather_output_dir, iib_config_params):
+def prepare_operators(operators, brew_token, install, must_gather_output_dir, **user_kwargs):
     LOGGER.info("Preparing operators dict")
     for operator in operators:
         kubeconfig = operator["kubeconfig"]
@@ -99,7 +99,7 @@ def prepare_operators(operators, brew_token, install, must_gather_output_dir, ii
             operator["source"] = operator.get("source", "redhat-operators")
             operator["brew-token"] = brew_token
 
-            iib_dict = get_iib_dict(iib_config_params=iib_config_params)
+            iib_dict = get_iib_dict(**user_kwargs)
             operator["iib_index_image"] = operator.get("iib", iib_dict.get(operator["name"]))
 
     return operators

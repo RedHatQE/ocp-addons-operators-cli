@@ -11,7 +11,7 @@ def set_debug_os_flags():
     os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
 
 
-def extract_iibs_from_json(ocp_version, job_name, iib_config_params):
+def extract_iibs_from_json(ocp_version, job_name, user_kwargs):
     """
     Extracts operators iibs which are marked as `triggered` by openshift-ci-trigger
 
@@ -20,21 +20,21 @@ def extract_iibs_from_json(ocp_version, job_name, iib_config_params):
     Args:
         ocp_version (str): Openshift version
         job_name (str): openshift ci job name
-        iib_config_params (dict): iib config params
+        user_kwargs (dict): dict with user kwargs
 
     Returns:
         dict: operator names as keys and iib path as values
     """
-    if s3_bucket_operators_latest_iib_path := iib_config_params.get("s3_bucket_operators_latest_iib_path"):
+    if s3_bucket_operators_latest_iib_path := user_kwargs.get("s3_bucket_operators_latest_iib_path"):
         bucket, key = s3_bucket_operators_latest_iib_path.split("/", 1)
-        client = s3_client(region_name=iib_config_params["aws_region"])
+        client = s3_client(region_name=user_kwargs["aws_region"])
 
         target_file_path = tempfile.NamedTemporaryFile(suffix="operators_latest_iib.json").name
 
         client.download_file(Bucket=bucket, Key=key, Filename=target_file_path)
 
     else:
-        target_file_path = iib_config_params["operators_latest_iib_path"]
+        target_file_path = user_kwargs["local_operators_latest_iib_path"]
 
     with open(target_file_path) as fd:
         iib_dict = json.load(fd)
@@ -85,11 +85,22 @@ def tts(ts):
         return int(ts)
 
 
-def get_iib_dict(iib_config_params):
+def get_iib_dict(**user_kwargs):
+    s3_bucket_operators_latest_iib_path = user_kwargs.get("s3_bucket_operators_latest_iib_path")
+    local_operators_latest_iib_path = user_kwargs.get("local_operators_latest_iib_path")
+
     ocp_version = os.environ.get("OCP_VERSION")
-    job_name = os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME")) if iib_config_params else None
+    job_name = (
+        os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
+        if (s3_bucket_operators_latest_iib_path or local_operators_latest_iib_path)
+        else None
+    )
 
     if ocp_version and job_name:
-        return extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name, iib_config_params=iib_config_params)
+        return extract_iibs_from_json(
+            ocp_version=ocp_version,
+            job_name=job_name,
+            user_kwargs=user_kwargs,
+        )
 
     return {}

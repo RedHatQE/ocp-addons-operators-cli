@@ -44,8 +44,8 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli --help
 * Operators configuration
   * `--kubeconfig`: Path to kubeconfig; can be overwritten by cluster-specific configuration
   To install operators from saved IIB json, created by [ci-jobs-trigger](https://github.com/RedHatQE/ci-jobs-trigger):
-  * `--operators-latest-iib-path`: Path to S3 object containing IIB image
-  * `--s3-bucket-operators-latest-iib-path`: Path to S3 object containing IIB image
+  * `--local-operators-latest-iib-path`: Path to local file containing IIB and jobs data
+  * `--s3-bucket-operators-latest-iib-path`: Path to S3 object containing IIB and jobs data
   * `--aws-access-key-id`: AWS access key id
   * `--aws-secret-access-key`: AWS secret access key
   * `--aws-region`: AWS region
