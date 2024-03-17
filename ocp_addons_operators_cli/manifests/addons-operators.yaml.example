@@ -5,10 +5,16 @@ debug: True
 parallel: True
 # Operators
 kubeconfig: !ENV "${KUBECONFIG}"
+operators_latest_iib_path: null # and s3_bucket_operators_latest_iib_path are mutually exclusive
+s3_bucket_operators_latest_iib_path: null # full path to S3 object containing IIB image
+aws_access_key_id: !ENV "${AWS_ACCESS_KEY_ID}"
+aws_secret_access_key: !ENV "${AWS_SECRET_ACCESS_KEY}"
+aws_region: us-east-1
 # Addons
 endpoint: "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
 ocm-token: !ENV "${OCM_TOKEN}"
 cluster-name: cluster1
+
 must_gather_output_dir: null
 
 addons:

@@ -14,6 +14,7 @@ from ocp_addons_operators_cli.utils.addons_utils import (
     prepare_addons,
 )
 from ocp_addons_operators_cli.utils.cli_utils import (
+    get_iib_config_params,
     run_install_or_uninstall_products,
     set_parallel,
     verify_user_input,
@@ -130,6 +131,22 @@ must-gather will try to collect data when addon/operator installation fails and 
     is_flag=True,
     show_default=True,
 )
+@click.option("--operators-latest-iib-path", help="Path to IIB json file", type=click.Path(exists=True))
+@click.option("--s3-bucket-operators-latest-iib-path", help="s3 bucket operators latest iib json path")
+@click.option(
+    "--aws-access-key-id",
+    help="AWS access-key-id, , needed for operators IIB installation when using --s3-bucket-operators-latest-iib-path.",
+    default=os.environ.get("AWS_ACCESS_KEY_ID"),
+)
+@click.option(
+    "--aws-secret-access-key",
+    help="AWS secret-access-key, needed for operators IIB installation when using --s3-bucket-operators-latest-iib-path.",
+    default=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+)
+@click.option(
+    "--aws-region",
+    help="AWS region, needed for operators IIB installation when using --s3-bucket-operators-latest-iib-path.",
+)
 def main(**kwargs):
     LOGGER.info(f"Click Version: {click.__version__}")
     LOGGER.info(f"Python Version: {sys.version}")
@@ -158,6 +175,7 @@ def main(**kwargs):
     install = action == INSTALL_STR
     user_kwargs["install"] = install
     must_gather_output_dir = user_kwargs.get("must_gather_output_dir")
+    iib_config_params = get_iib_config_params(**user_kwargs)
 
     verify_user_input(**user_kwargs)
 
@@ -166,6 +184,7 @@ def main(**kwargs):
         brew_token=brew_token,
         install=install,
         must_gather_output_dir=must_gather_output_dir,
+        iib_config_params=iib_config_params,
     )
     addons = prepare_addons(
         addons=addons,

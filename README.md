@@ -43,6 +43,13 @@ podman run quay.io/redhat_msi/ocp-addons-operators-cli --help
 
 * Operators configuration
   * `--kubeconfig`: Path to kubeconfig; can be overwritten by cluster-specific configuration
+  To install operators from saved IIB json:
+  * `--operators-latest-iib-path`: Path to S3 object containing IIB image
+  * `--s3-bucket-operators-latest-iib-path`: Path to S3 object containing IIB image
+  * `--aws-access-key-id`: AWS access key id
+  * `--aws-secret-access-key`: AWS secret access key
+  * `--aws-region`: AWS region
+  - `PARENT_JOB_NAME` and `OCP_VERSION` environment variables should be set
 * Addons configuration
   * `--endpoint`: SSO endpoint url, defaults to https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
   * `--ocm-token`: OCM token, defaults to `OCM_TOKEN` environment variable

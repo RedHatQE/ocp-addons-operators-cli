@@ -35,6 +35,26 @@ def assert_action(action):
         raise click.Abort()
 
 
+def assert_operators_iib_configuration(kwargs):
+    if kwargs.get("operators"):
+        LOGGER.info("Verify `iib` configuration for operators installation.")
+        s3_bucket_operators_latest_iib_path = kwargs.get("s3_bucket_operators_latest_iib_path")
+        if kwargs.get("operators_latest_iib_path") and s3_bucket_operators_latest_iib_path:
+            LOGGER.error(
+                "Cannot use `s3_bucket_operators_latest_iib_path` and `operators_latest_iib_path` at the same time"
+            )
+            raise click.Abort()
+
+        if s3_bucket_operators_latest_iib_path:
+            if missing_configs := [
+                conf
+                for conf in ("aws_access_key_id", "aws_region", "aws_secret_access_key")
+                if conf not in kwargs or kwargs[conf] is None
+            ]:
+                LOGGER.error(f"Missing AWS configurations: {missing_configs}")
+                raise click.Abort()
+
+
 def verify_user_input(**kwargs):
     action = kwargs.get("action")
     operators = kwargs.get("operators")
@@ -52,6 +72,8 @@ def verify_user_input(**kwargs):
 
     assert_operators_user_input(operators=operators, brew_token=brew_token)
     assert_addons_user_input(addons=addons, brew_token=brew_token)
+
+    assert_operators_iib_configuration(kwargs=kwargs)
 
 
 def run_install_or_uninstall_products(operators, addons, parallel, debug, install):
@@ -107,3 +129,13 @@ def set_parallel(user_input_parallel, operators, addons):
         return user_input_parallel
 
     return False
+
+
+def get_iib_config_params(**kwargs):
+    return {
+        "s3_bucket_operators_latest_iib_path": kwargs.get("s3_bucket_operators_latest_iib_path"),
+        "aws_access_key_id": kwargs.get("aws_access_key_id"),
+        "aws_region": kwargs.get("aws_region"),
+        "aws_secret_access_key": kwargs.get("aws_secret_access_key"),
+        "operators_latest_iib_path": kwargs.get("operators_latest_iib_path"),
+    }

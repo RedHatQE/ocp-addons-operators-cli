@@ -1,8 +1,9 @@
 import json
 import os
 import re
+import tempfile
 
-import requests
+from clouds.aws.session_clients import s3_client
 
 
 def set_debug_os_flags():
@@ -10,25 +11,34 @@ def set_debug_os_flags():
     os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
 
 
-def extract_iibs_from_json(ocp_version, job_name):
+def extract_iibs_from_json(ocp_version, job_name, iib_config_params):
     """
     Extracts operators iibs which are marked as `triggered` by openshift-ci-trigger
 
-    Use https://raw.githubusercontent.com/RedHatQE/openshift-ci-trigger/main/operators-latest-iib.json
-    to extract iib data.
+    The information can either be saved in an S3 object or in a local file.
 
     Args:
         ocp_version (str): Openshift version
         job_name (str): openshift ci job name
+        iib_config_params (dict): iib config params
 
     Returns:
         dict: operator names as keys and iib path as values
     """
-    iib_dict = json.loads(
-        requests.get(
-            "https://raw.githubusercontent.com/RedHatQE/openshift-ci-trigger/main/operators-latest-iib.json"
-        ).text
-    )
+    if s3_bucket_operators_latest_iib_path := iib_config_params.get("s3_bucket_operators_latest_iib_path"):
+        bucket, key = s3_bucket_operators_latest_iib_path.split("/", 1)
+        client = s3_client(region_name=iib_config_params["aws_region"])
+
+        target_file_path = tempfile.NamedTemporaryFile(suffix="operators_latest_iib.json").name
+
+        client.download_file(Bucket=bucket, Key=key, Filename=target_file_path)
+
+    else:
+        target_file_path = iib_config_params["operators_latest_iib_path"]
+
+    with open(target_file_path) as fd:
+        iib_dict = json.load(fd)
+
     ocp_version_str = f"v{ocp_version}"
     job_dict = iib_dict.get(ocp_version_str, {}).get(job_name, {})
     if not job_dict:
@@ -75,15 +85,11 @@ def tts(ts):
         return int(ts)
 
 
-def get_iib_dict():
+def get_iib_dict(iib_config_params):
     ocp_version = os.environ.get("OCP_VERSION")
-    job_name = (
-        os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
-        if os.environ.get("INSTALL_FROM_IIB") == "true"
-        else None
-    )
+    job_name = os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME")) if iib_config_params else None
 
     if ocp_version and job_name:
-        return extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name)
+        return extract_iibs_from_json(ocp_version=ocp_version, job_name=job_name, iib_config_params=iib_config_params)
 
     return {}
