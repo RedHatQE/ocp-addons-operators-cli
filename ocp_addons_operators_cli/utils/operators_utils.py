@@ -84,6 +84,9 @@ def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):
 
 def prepare_operators(operators, brew_token, install, must_gather_output_dir, user_kwargs_dict):
     LOGGER.info("Preparing operators dict")
+
+    iib_dict = get_iib_dict(user_kwargs_dict=user_kwargs_dict) if install else None
+
     for operator in operators:
         kubeconfig = operator["kubeconfig"]
         operator["ocp-client"] = get_client(config_file=kubeconfig)
@@ -98,8 +101,6 @@ def prepare_operators(operators, brew_token, install, must_gather_output_dir, us
             operator["channel"] = operator.get("channel", "stable")
             operator["source"] = operator.get("source", "redhat-operators")
             operator["brew-token"] = brew_token
-
-            iib_dict = get_iib_dict(user_kwargs_dict=user_kwargs_dict)
             operator["iib_index_image"] = operator.get("iib", iib_dict.get(operator["name"]))
 
     return operators
@@ -125,7 +126,7 @@ def prepare_operators_action(operators, install):
                 action_kwargs["brew_token"] = brew_token
             action_kwargs["channel"] = operator["channel"]
             action_kwargs["source"] = operator["source"]
-            action_kwargs["iib_index_image"] = operator.get("iib")
+            action_kwargs["iib_index_image"] = operator.get("iib_index_image")
             action_kwargs["source_image"] = operator.get("source-image")
             action_kwargs["target_namespaces"] = operator.get("target-namespaces")
             if must_gather_output_dir := operator.get("must_gather_output_dir"):
