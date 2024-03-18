@@ -11,7 +11,7 @@ def set_debug_os_flags():
     os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
 
 
-def extract_iibs_from_json(ocp_version, job_name, user_kwargs):
+def extract_iibs_from_json(ocp_version, job_name, user_kwargs_dict):
     """
     Extracts operators iibs which are marked as `triggered` by openshift-ci-trigger
 
@@ -20,21 +20,21 @@ def extract_iibs_from_json(ocp_version, job_name, user_kwargs):
     Args:
         ocp_version (str): Openshift version
         job_name (str): openshift ci job name
-        user_kwargs (dict): dict with user kwargs
+        user_kwargs_dict (dict): dict with user kwargs
 
     Returns:
         dict: operator names as keys and iib path as values
     """
-    if s3_bucket_operators_latest_iib_path := user_kwargs.get("s3_bucket_operators_latest_iib_path"):
+    if s3_bucket_operators_latest_iib_path := user_kwargs_dict.get("s3_bucket_operators_latest_iib_path"):
         bucket, key = s3_bucket_operators_latest_iib_path.split("/", 1)
-        client = s3_client(region_name=user_kwargs["aws_region"])
+        client = s3_client(region_name=user_kwargs_dict["aws_region"])
 
         target_file_path = tempfile.NamedTemporaryFile(suffix="operators_latest_iib.json").name
 
         client.download_file(Bucket=bucket, Key=key, Filename=target_file_path)
 
     else:
-        target_file_path = user_kwargs["local_operators_latest_iib_path"]
+        target_file_path = user_kwargs_dict["local_operators_latest_iib_path"]
 
     with open(target_file_path) as fd:
         iib_dict = json.load(fd)
@@ -43,10 +43,11 @@ def extract_iibs_from_json(ocp_version, job_name, user_kwargs):
     job_dict = iib_dict.get(ocp_version_str, {}).get(job_name, {})
     if not job_dict:
         raise ValueError(f"Missing {ocp_version} / {job_name} in {iib_dict}")
+
     return {
         operator_name: operator_config["iib"]
-        for operator_name, operator_config in iib_dict[ocp_version_str][job_name].items()
-        if operator_config["triggered"]
+        for operator_name, operator_config in job_dict["operators"].items()
+        if operator_config["new-iib"]
     }
 
 
@@ -85,9 +86,9 @@ def tts(ts):
         return int(ts)
 
 
-def get_iib_dict(**user_kwargs):
-    s3_bucket_operators_latest_iib_path = user_kwargs.get("s3_bucket_operators_latest_iib_path")
-    local_operators_latest_iib_path = user_kwargs.get("local_operators_latest_iib_path")
+def get_iib_dict(user_kwargs_dict):
+    s3_bucket_operators_latest_iib_path = user_kwargs_dict.get("s3_bucket_operators_latest_iib_path")
+    local_operators_latest_iib_path = user_kwargs_dict.get("local_operators_latest_iib_path")
 
     ocp_version = os.environ.get("OCP_VERSION")
     job_name = (
@@ -100,7 +101,7 @@ def get_iib_dict(**user_kwargs):
         return extract_iibs_from_json(
             ocp_version=ocp_version,
             job_name=job_name,
-            user_kwargs=user_kwargs,
+            user_kwargs_dict=user_kwargs_dict,
         )
 
     return {}
