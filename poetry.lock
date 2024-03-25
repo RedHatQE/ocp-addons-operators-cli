@@ -764,12 +764,12 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.91"
+version = "1.0.92"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.91.tar.gz", hash = "sha256:ea35b1c2148ff46706d1499e12828e3a1d6fcf581a325ce1eaeb459cea66f68e"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.92.tar.gz", hash = "sha256:ac005b03c49fdb74fd1c5e2cb04ff0ca5b7c89544188ccf6053a87dbd4f2d85b"},
 ]
 
 [package.dependencies]
@@ -788,12 +788,12 @@ timeout-sampler = ">=0.0.2"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "5.0.30"
+version = "5.0.31"
 description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_utilities-5.0.30.tar.gz", hash = "sha256:3874c9eb154101b197aa7c7f691c5e4ffec2b8a74f2d5c1e68719ab8e6aafb8e"},
+    {file = "openshift_python_utilities-5.0.31.tar.gz", hash = "sha256:6c90f3a51bd35aa682c23e432ae86311174d8db611a1db93b6a359619c9ed001"},
 ]
 
 [package.dependencies]
@@ -810,12 +810,12 @@ timeout-sampler = ">=0.0.17"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "10.0.23"
+version = "10.0.24"
 description = "Wrapper around https://github.com/kubernetes-client/python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_wrapper-10.0.23.tar.gz", hash = "sha256:83a44dcdfcda2b5e24a3438650dbb77fc951a4d44869d8b0314b4468b0133f74"},
+    {file = "openshift_python_wrapper-10.0.24.tar.gz", hash = "sha256:24bcabc632a1cf2375be8022dd77a7b123fcc6ff8ff823578f3dfdceddaafa9c"},
 ]
 
 [package.dependencies]
@@ -1134,12 +1134,12 @@ files = [
 
 [[package]]
 name = "python-simple-logger"
-version = "1.0.18"
+version = "1.0.19"
 description = "A simple logger for python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "python_simple_logger-1.0.18.tar.gz", hash = "sha256:0e3693986f230f6bd8acd09c757af29760e92ecb25c28924f948f96f0a8ebdcc"},
+    {file = "python_simple_logger-1.0.19.tar.gz", hash = "sha256:09e012b7eae28d22cd00725576aac0ec06f283838a57888d4d23b8935fc8092e"},
 ]
 
 [package.dependencies]
