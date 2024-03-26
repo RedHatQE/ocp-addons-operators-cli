@@ -4,6 +4,10 @@ import re
 import tempfile
 
 from clouds.aws.session_clients import s3_client
+from simple_logger.logger import get_logger
+
+
+LOGGER = get_logger(name=__name__)
 
 
 def set_debug_os_flags():
@@ -31,6 +35,7 @@ def extract_iibs_from_json(ocp_version, job_name, user_kwargs_dict):
 
         target_file_path = tempfile.NamedTemporaryFile(suffix="operators_latest_iib.json").name
 
+        LOGGER.info(f"Downloading {key} from {bucket} to {target_file_path}")
         client.download_file(Bucket=bucket, Key=key, Filename=target_file_path)
 
     else:
@@ -44,11 +49,14 @@ def extract_iibs_from_json(ocp_version, job_name, user_kwargs_dict):
     if not job_dict:
         raise ValueError(f"Missing {ocp_version} / {job_name} in {iib_dict}")
 
-    return {
+    iib_dict = {
         operator_name: operator_config["iib"]
         for operator_name, operator_config in job_dict["operators"].items()
         if operator_config["new-iib"]
     }
+    LOGGER.info(f"Extracted operators iibs: {iib_dict}")
+
+    return iib_dict
 
 
 # TODO: Move to own repository.
