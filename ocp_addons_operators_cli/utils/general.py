@@ -106,6 +106,7 @@ def get_iib_dict(user_kwargs_dict):
     )
 
     if ocp_version and job_name:
+        LOGGER.info(f"Extract operators iibs for job {job_name}, OCP version: {ocp_version}")
         return extract_iibs_from_json(
             ocp_version=ocp_version,
             job_name=job_name,
