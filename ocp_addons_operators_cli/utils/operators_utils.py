@@ -4,10 +4,15 @@ import click
 import yaml
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
+from ocp_utilities.cluster_versions import get_cluster_version
 from simple_logger.logger import get_logger
 
 from ocp_addons_operators_cli.constants import TIMEOUT_60MIN
-from ocp_addons_operators_cli.utils.general import get_iib_dict, tts
+from ocp_addons_operators_cli.utils.general import (
+    get_operator_iib,
+    get_operators_iibs_config_from_json,
+    tts,
+)
 
 LOGGER = get_logger(name=__name__)
 
@@ -82,11 +87,58 @@ def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):
     return kubeconfig_clusters[0]["name"]
 
 
-def prepare_operators(operators, brew_token, install, must_gather_output_dir, user_kwargs_dict):
+def get_operator_iib_from_iib_dict(iib_dict, operator_dict, job_name=None):
+    if iib := operator_dict.get("iib"):
+        return iib
+
+    if not job_name:
+        return None
+
+    cluster_version = get_cluster_version(client=operator_dict["ocp-client"])
+    cluster_version_major_minor = f"{cluster_version.major}.{cluster_version.minor}"
+
+    return get_operator_iib(
+        iib_dict=iib_dict,
+        ocp_version=cluster_version_major_minor,
+        job_name=job_name,
+        operator_name=operator_dict["name"],
+    )
+
+
+def prepare_operators(operators, install, user_kwargs_dict):
+    """
+    Update operator dict with additional data for install or uninstall
+
+    Args:
+        operators (list): list of operators dicts
+        install (bool): install or uninstall action
+        user_kwargs_dict (dict): dict with user kwargs
+
+    Returns:
+        list: updated list of operators dicts
+
+    """
     LOGGER.info("Preparing operators dict")
 
-    iib_dict = get_iib_dict(user_kwargs_dict=user_kwargs_dict) if install else None
+    iib_dict = None
+    job_name = None
 
+    if install:
+        s3_bucket_operators_latest_iib_path = user_kwargs_dict.get("s3_bucket_operators_latest_iib_path")
+        local_operators_latest_iib_path = user_kwargs_dict.get("local_operators_latest_iib_path")
+
+        if s3_bucket_operators_latest_iib_path or local_operators_latest_iib_path:
+            iib_dict = get_operators_iibs_config_from_json(
+                s3_bucket_operators_latest_iib_path=s3_bucket_operators_latest_iib_path,
+                aws_region=user_kwargs_dict.get("aws_region"),
+                local_operators_latest_iib_path=local_operators_latest_iib_path,
+            )
+
+            job_name = os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
+
+    # import ipdb
+    #
+    # ipdb.set_trace()
     for operator in operators:
         kubeconfig = operator["kubeconfig"]
         operator["ocp-client"] = get_client(config_file=kubeconfig)
@@ -95,13 +147,14 @@ def prepare_operators(operators, brew_token, install, must_gather_output_dir, us
             operator_name=operator["name"],
         )
         operator["timeout"] = tts(ts=operator.get("timeout", TIMEOUT_60MIN))
-        operator["must_gather_output_dir"] = must_gather_output_dir
+        operator["must_gather_output_dir"] = user_kwargs_dict.get("must_gather_output_dir")
 
         if install:
             operator["channel"] = operator.get("channel", "stable")
             operator["source"] = operator.get("source", "redhat-operators")
-            operator["brew-token"] = brew_token
-            operator["iib_index_image"] = operator.get("iib", iib_dict.get(operator["name"]))
+            operator["iib_index_image"] = get_operator_iib_from_iib_dict(
+                iib_dict=iib_dict, job_name=job_name, operator_dict=operator
+            )
 
     return operators
 

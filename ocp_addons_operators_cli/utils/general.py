@@ -15,23 +15,25 @@ def set_debug_os_flags():
     os.environ["OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL"] = "DEBUG"
 
 
-def extract_iibs_from_json(ocp_version, job_name, user_kwargs_dict):
+def get_operators_iibs_config_from_json(
+    s3_bucket_operators_latest_iib_path=None,
+    aws_region=None,
+    local_operators_latest_iib_path=None,
+):
     """
-    Extracts operators iibs which are marked as `triggered` by openshift-ci-trigger
-
-    The information can either be saved in an S3 object or in a local file.
+    Get operators iibs data from an S3 object or in a local file.
 
     Args:
-        ocp_version (str): Openshift version
-        job_name (str): openshift ci job name
-        user_kwargs_dict (dict): dict with user kwargs
+        s3_bucket_operators_latest_iib_path (str, optional): full path to S3 object containing IIB data
+        aws_region (str, optional): AWS region
+        local_operators_latest_iib_path (str, optional): full path to local file containing IIB data
 
     Returns:
-        dict: operator names as keys and iib path as values
+        dict: operators iibs data
     """
-    if s3_bucket_operators_latest_iib_path := user_kwargs_dict.get("s3_bucket_operators_latest_iib_path"):
+    if s3_bucket_operators_latest_iib_path:
         bucket, key = s3_bucket_operators_latest_iib_path.split("/", 1)
-        client = s3_client(region_name=user_kwargs_dict["aws_region"])
+        client = s3_client(region_name=aws_region)
 
         target_file_path = tempfile.NamedTemporaryFile(suffix="operators_latest_iib.json").name
 
@@ -39,24 +41,24 @@ def extract_iibs_from_json(ocp_version, job_name, user_kwargs_dict):
         client.download_file(Bucket=bucket, Key=key, Filename=target_file_path)
 
     else:
-        target_file_path = user_kwargs_dict["local_operators_latest_iib_path"]
+        target_file_path = local_operators_latest_iib_path
 
     with open(target_file_path) as fd:
-        iib_dict = json.load(fd)
+        return json.load(fd)
 
+
+def get_operator_iib(iib_dict, ocp_version, job_name, operator_name):
     ocp_version_str = f"v{ocp_version}"
     job_dict = iib_dict.get(ocp_version_str, {}).get(job_name, {})
     if not job_dict:
-        raise ValueError(f"Missing {ocp_version} / {job_name} in {iib_dict}")
+        raise ValueError(f"Missing {ocp_version_str} / {job_name} in {iib_dict}")
 
-    iib_dict = {
-        operator_name: operator_config["iib"]
-        for operator_name, operator_config in job_dict["operators"].items()
-        if operator_config["new-iib"]
-    }
-    LOGGER.info(f"Extracted operators iibs: {iib_dict}")
+    if (operator_dict := job_dict["operators"].get(operator_name)) and operator_dict.get("new-iib"):
+        operator_iib = operator_dict.get("iib")
+        LOGGER.info(f"Extracted operators iib: {operator_iib}")
+        return operator_iib
 
-    return iib_dict
+    return None
 
 
 # TODO: Move to own repository.
@@ -92,25 +94,3 @@ def tts(ts):
         return _time * 60 * 60
     else:
         return int(ts)
-
-
-def get_iib_dict(user_kwargs_dict):
-    s3_bucket_operators_latest_iib_path = user_kwargs_dict.get("s3_bucket_operators_latest_iib_path")
-    local_operators_latest_iib_path = user_kwargs_dict.get("local_operators_latest_iib_path")
-
-    ocp_version = os.environ.get("OCP_VERSION")
-    job_name = (
-        os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
-        if (s3_bucket_operators_latest_iib_path or local_operators_latest_iib_path)
-        else None
-    )
-
-    if ocp_version and job_name:
-        LOGGER.info(f"Extract operators iibs for job {job_name}, OCP version: {ocp_version}")
-        return extract_iibs_from_json(
-            ocp_version=ocp_version,
-            job_name=job_name,
-            user_kwargs_dict=user_kwargs_dict,
-        )
-
-    return {}

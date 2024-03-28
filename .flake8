@@ -16,6 +16,7 @@ fcn_exclude_functions =
     json,
     logging,
     write,
+    mocker,
 
 enable-extensions =
     FCN,

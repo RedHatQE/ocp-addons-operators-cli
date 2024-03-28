@@ -179,9 +179,7 @@ def main(**kwargs):
 
     operators = prepare_operators(
         operators=operators,
-        brew_token=brew_token,
         install=install,
-        must_gather_output_dir=must_gather_output_dir,
         user_kwargs_dict=user_kwargs,
     )
     addons = prepare_addons(
