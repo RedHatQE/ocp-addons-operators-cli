@@ -136,9 +136,6 @@ def prepare_operators(operators, install, user_kwargs_dict):
 
             job_name = os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
 
-    # import ipdb
-    #
-    # ipdb.set_trace()
     for operator in operators:
         kubeconfig = operator["kubeconfig"]
         operator["ocp-client"] = get_client(config_file=kubeconfig)

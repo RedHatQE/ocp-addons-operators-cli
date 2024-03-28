@@ -1,6 +1,20 @@
+import copy
+
 import pytest
 
-from ocp_addons_operators_cli.utils.operators_utils import prepare_operators
+
+@pytest.fixture()
+def _prepare_operators(mocker):
+    mocker.patch("ocp_utilities.infra.get_client", return_value="client")
+    mocker.patch(
+        "ocp_addons_operators_cli.utils.operators_utils.get_cluster_name_from_kubeconfig", return_value="cluster-name"
+    )
+
+    # import is done here as mocked functions are used in prepare_operators
+    # if the import is done before the mocked functions, the mocked functions are not working
+    from ocp_addons_operators_cli.utils.operators_utils import prepare_operators
+
+    return prepare_operators
 
 
 @pytest.fixture
@@ -30,32 +44,31 @@ def iib_dict():
 
 
 @pytest.fixture
-def operators_list():
-    return [
-        {
-            "name": "operator1",
-            "namespace": "operator1-ns",
-            "iib": "operator1-iib",
-            "timeout": "30m",
-            "kubeconfig": "kubeconfig",
-            "brew-token": "brew-token",
-            "channel": "stable",
-            "source": "operators-source",
-            "target-namespaces": ["target-namespace"],
-        }
-    ]
+def base_operator_dict():
+    return {
+        "name": "operator1",
+        "namespace": "operator1-ns",
+        "timeout": "30m",
+        "kubeconfig": "kubeconfig",
+        "brew-token": "brew-token",
+        "channel": "stable",
+        "source": "operators-source",
+        "target-namespaces": ["target-namespace"],
+    }
 
 
-def test_prepare_operator_with_iib_from_config(
-    mocker,
-    operators_list,
-):
-    mocker.patch("ocp_utilities.infra.get_client", return_value="client")
-    # mocker.patch(
-    #     "ocp_addons_operators_cli.utils.general.get_operators_iibs_config_from_json",
-    #     return_value=None,
-    # )
-    # import ipdb
-    #
-    # ipdb.set_trace()
-    prepare_operators(operators=operators_list, install=True, user_kwargs_dict={})
+@pytest.fixture
+def operator_dict_with_iib(base_operator_dict):
+    operator_dict = copy.deepcopy(base_operator_dict)
+    operator_dict["iib"] = "iib-index-image"
+    return operator_dict
+
+
+def test_prepare_operator_with_iib_from_config(_prepare_operators, operator_dict_with_iib):
+    _operators_list = _prepare_operators(operators=[operator_dict_with_iib], install=True, user_kwargs_dict={})
+    assert _operators_list[0]["iib_index_image"] == operator_dict_with_iib["iib_index_image"]
+
+
+def test_prepare_operator_without_iib_from_config(_prepare_operators, base_operator_dict):
+    _operators_list = _prepare_operators(operators=[base_operator_dict], install=True, user_kwargs_dict={})
+    assert _operators_list[0]["iib_index_image"] is None
