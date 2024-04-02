@@ -17,6 +17,7 @@ fcn_exclude_functions =
     logging,
     write,
     mocker,
+    Version,
 
 enable-extensions =
     FCN,

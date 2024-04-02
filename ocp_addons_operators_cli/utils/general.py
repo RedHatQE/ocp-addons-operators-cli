@@ -50,6 +50,7 @@ def get_operators_iibs_config_from_json(
 def get_operator_iib(iib_dict, ocp_version, job_name, operator_name):
     ocp_version_str = f"v{ocp_version}"
     job_dict = iib_dict.get(ocp_version_str, {}).get(job_name, {})
+
     if not job_dict:
         raise ValueError(f"Missing {ocp_version_str} / {job_name} in {iib_dict}")
 
