@@ -228,10 +228,6 @@ def test_prepare_operator_with_iib_from_json_no_ocp_match(
         ValueError,
         match=f".*Missing {cluster_version_major_minor} / {job_name_as_environment_variable}.*",
     ):
-        from ocp_utilities.cluster_versions import get_cluster_version
-
-        get_cluster_version()
-
         _prepare_operators_from_iib_json(
             operators=[base_operator_dict],
             install=True,
