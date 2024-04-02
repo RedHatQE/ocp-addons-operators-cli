@@ -831,12 +831,12 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.94"
+version = "1.0.96"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.94.tar.gz", hash = "sha256:1ef8b054604fdf136aab557a3663cf8357a946d98b0757440553053f6c4b003e"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.96.tar.gz", hash = "sha256:e91d4508f8023cbd2e6b1dd1abe2debdf78c650bc1b3d8225b33fda13e9f5cca"},
 ]
 
 [package.dependencies]
@@ -855,12 +855,12 @@ timeout-sampler = ">=0.0.2"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "5.0.33"
+version = "5.0.34"
 description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_utilities-5.0.33.tar.gz", hash = "sha256:264072a001b8b02b48c89bc23add20e0010f45266ee3842fe59d88e3041e9010"},
+    {file = "openshift_python_utilities-5.0.34.tar.gz", hash = "sha256:c087b1b1cccb0956a37007d08d92152f15da5db051fb99f21fd173698e4bae8c"},
 ]
 
 [package.dependencies]
@@ -868,7 +868,6 @@ beautifulsoup4 = ">=4.12.3,<5.0.0"
 colorlog = ">=6.7.0,<7.0.0"
 openshift-python-wrapper = ">=10.0.4"
 openshift-python-wrapper-data-collector = ">=1.0.4"
-pytest = ">=8.0.0,<9.0.0"
 python-simple-logger = ">=1.0.5"
 pyyaml = ">=6.0.1,<7.0.0"
 requests = ">=2.31.0,<3.0.0"
@@ -877,12 +876,12 @@ timeout-sampler = ">=0.0.17"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "10.0.27"
+version = "10.0.28"
 description = "Wrapper around https://github.com/kubernetes-client/python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_wrapper-10.0.27.tar.gz", hash = "sha256:a12ad8576663b28ea715a2518d187341181b7ac91f07d313954a5322f7d41624"},
+    {file = "openshift_python_wrapper-10.0.28.tar.gz", hash = "sha256:9d9554478ccd64754af2d13d909762551902311d065b0654d88e971e99446f07"},
 ]
 
 [package.dependencies]
