@@ -56,7 +56,7 @@ def get_operator_iib(iib_dict, ocp_version, job_name, operator_name):
 
     if (operator_dict := job_dict["operators"].get(operator_name)) and operator_dict.get("new-iib"):
         operator_iib = operator_dict.get("iib")
-        LOGGER.info(f"Extracted operators iib: {operator_iib}")
+        LOGGER.info(f"Extracted operator `{operator_name}` iib: {operator_iib}")
         return operator_iib
 
     return None
