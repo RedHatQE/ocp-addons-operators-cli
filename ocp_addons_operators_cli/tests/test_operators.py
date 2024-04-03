@@ -4,53 +4,35 @@ import os
 import pytest
 from semver import Version
 
-
-@pytest.fixture
-def cluster_version(request):
-    return Version.parse(request.param)
+from ocp_addons_operators_cli.utils.operators_utils import prepare_operators
 
 
-@pytest.fixture
-def cluster_version_major_minor(cluster_version):
-    return f"v{cluster_version.major}.{cluster_version.minor}"
+pytestmark = pytest.mark.usefixtures("mocked_prepare_operators")
 
 
 @pytest.fixture
-def mocked_get_client(mocker):
-    mocker.patch("ocp_utilities.infra.get_client", return_value="client")
-
-
-@pytest.fixture
-def _prepare_operators_from_config(mocker, mocked_get_client):
-    mock_get_cluster_name_from_kubeconfig(mocker=mocker)
-
-    # import is done here as mocked functions are used in prepare_operators
-    # if the import is done before the mocked functions, the mocked functions are not working
-    from ocp_addons_operators_cli.utils import operators_utils
-
-    return operators_utils.prepare_operators
-
-
-@pytest.fixture
-def _prepare_operators_from_iib_json(mocker, mocked_get_client, base_iib_dict, cluster_version):
-    mocker.patch(
-        "ocp_utilities.cluster_versions.get_cluster_version",
-        return_value=cluster_version,
-    )
-
-    mock_get_cluster_name_from_kubeconfig(mocker=mocker)
+def mocked_prepare_operators(request, mocker, base_iib_dict):
+    operators_utils_path = "ocp_addons_operators_cli.utils.operators_utils"
 
     mocker.patch(
-        "ocp_addons_operators_cli.utils.operators_utils.get_operators_iibs_config_from_json",
-        return_value=base_iib_dict,
+        f"{operators_utils_path}.get_client",
+        return_value="client",
+    )
+    mocker.patch(
+        f"{operators_utils_path}.get_cluster_name_from_kubeconfig",
+        return_value="cluster-name",
     )
 
-    # import is done here as mocked functions are used in prepare_operators
-    # if the import is done before the mocked functions, the mocked functions are not working
-    # the order of mocked functions is important; place first the ones that are later imported in the other mocked functions
-    from ocp_addons_operators_cli.utils import operators_utils
+    if hasattr(request, "param") and request.param.get("iib_json"):
+        mocker.patch(
+            f"{operators_utils_path}.get_cluster_version",
+            return_value=request.param["cluster_version"],
+        )
 
-    return operators_utils.prepare_operators
+        mocker.patch(
+            f"{operators_utils_path}.get_operators_iibs_config_from_json",
+            return_value=base_iib_dict,
+        )
 
 
 @pytest.fixture
@@ -110,169 +92,132 @@ def prepare_operator_user_kwargs_with_local_iib_path():
     return {"local_operators_latest_iib_path": "iib_path"}
 
 
-def mock_get_cluster_name_from_kubeconfig(mocker):
-    mocker.patch(
-        "ocp_addons_operators_cli.utils.operators_utils.get_cluster_name_from_kubeconfig",
-        return_value="cluster-name",
-    )
+def cluster_version_major_minor_str(cluster_version):
+    return f"v{cluster_version.major}.{cluster_version.minor}"
 
 
 @pytest.mark.parametrize(
-    "cluster_version, base_iib_dict",
-    [
-        pytest.param(
-            "4.15.0",
-            True,
-        ),
-    ],
+    "mocked_prepare_operators",
+    [{"iib_json": True, "cluster_version": Version.parse("4.15.0")}],
     indirect=True,
 )
-def test_prepare_operator_with_new_iib_from_json(
-    cluster_version,
-    cluster_version_major_minor,
-    base_iib_dict,
-    _prepare_operators_from_iib_json,
-    base_operator_dict,
-    job_name_as_environment_variable,
-    prepare_operator_user_kwargs_with_local_iib_path,
-):
-    _operators_list = _prepare_operators_from_iib_json(
-        operators=[base_operator_dict],
-        install=True,
-        user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
-    )
+class TestPrepareOperatorFromJson:
+    @pytest.mark.parametrize("base_iib_dict", [True], indirect=True)
+    def test_prepare_operator_with_new_iib_from_json(
+        self,
+        request,
+        base_iib_dict,
+        base_operator_dict,
+        job_name_as_environment_variable,
+        prepare_operator_user_kwargs_with_local_iib_path,
+    ):
+        _operators_list = prepare_operators(
+            operators=[base_operator_dict],
+            install=True,
+            user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
+        )
 
-    operator_name = _operators_list[0]["name"]
-    operator_iib = base_iib_dict[cluster_version_major_minor][job_name_as_environment_variable]["operators"][
-        operator_name
-    ]["iib"]
+        operator_name = _operators_list[0]["name"]
+        operator_iib = base_iib_dict[
+            cluster_version_major_minor_str(
+                cluster_version=request.node.callspec.params["mocked_prepare_operators"]["cluster_version"]
+            )
+        ][job_name_as_environment_variable]["operators"][operator_name]["iib"]
 
-    assert operator_iib == _operators_list[0]["iib_index_image"]
+        assert operator_iib == _operators_list[0]["iib_index_image"]
+
+    @pytest.mark.parametrize("base_iib_dict", [True], indirect=True)
+    def test_prepare_operator_with_new_iib_from_json_no_operator_match(
+        self,
+        base_iib_dict,
+        operator_dict_with_unmatched_operator,
+        job_name_as_environment_variable,
+        prepare_operator_user_kwargs_with_local_iib_path,
+    ):
+        _operators_list = prepare_operators(
+            operators=[operator_dict_with_unmatched_operator],
+            install=True,
+            user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
+        )
+        assert _operators_list[0]["iib_index_image"] is None
+
+    @pytest.mark.parametrize("base_iib_dict", [False], indirect=True)
+    def test_prepare_operator_with_no_new_iib_from_json(
+        self,
+        base_iib_dict,
+        base_operator_dict,
+        job_name_as_environment_variable,
+        prepare_operator_user_kwargs_with_local_iib_path,
+    ):
+        _operators_list = prepare_operators(
+            operators=[base_operator_dict],
+            install=True,
+            user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
+        )
+
+        assert _operators_list[0]["iib_index_image"] is None
+
+    @pytest.mark.parametrize("base_iib_dict", [True], indirect=True)
+    def test_prepare_operator_with_iib_from_json_no_job_match(
+        self,
+        request,
+        base_iib_dict,
+        base_operator_dict,
+        prepare_operator_user_kwargs_with_local_iib_path,
+    ):
+        missing_job_name = "4_16_job"
+        os.environ["PARENT_JOB_NAME"] = missing_job_name
+        cluster_version_major_minor = cluster_version_major_minor_str(
+            cluster_version=request.node.callspec.params["mocked_prepare_operators"]["cluster_version"]
+        )
+        with pytest.raises(
+            ValueError,
+            match=f".*Missing {cluster_version_major_minor} / {missing_job_name}.*",
+        ):
+            prepare_operators(
+                operators=[base_operator_dict],
+                install=True,
+                user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
+            )
 
 
 @pytest.mark.parametrize(
-    "cluster_version, base_iib_dict",
+    "mocked_prepare_operators, base_iib_dict",
     [
         pytest.param(
-            "4.15.0",
-            True,
-        ),
-    ],
-    indirect=True,
-)
-def test_prepare_operator_with_new_iib_from_json_no_operator_match(
-    cluster_version,
-    cluster_version_major_minor,
-    base_iib_dict,
-    _prepare_operators_from_iib_json,
-    operator_dict_with_unmatched_operator,
-    job_name_as_environment_variable,
-    prepare_operator_user_kwargs_with_local_iib_path,
-):
-    _operators_list = _prepare_operators_from_iib_json(
-        operators=[operator_dict_with_unmatched_operator],
-        install=True,
-        user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
-    )
-    assert _operators_list[0]["iib_index_image"] is None
-
-
-@pytest.mark.parametrize(
-    "cluster_version, base_iib_dict",
-    [
-        pytest.param(
-            "4.15.0",
-            False,
-        ),
-    ],
-    indirect=True,
-)
-def test_prepare_operator_with_no_new_iib_from_json(
-    cluster_version,
-    cluster_version_major_minor,
-    base_iib_dict,
-    _prepare_operators_from_iib_json,
-    base_operator_dict,
-    job_name_as_environment_variable,
-    prepare_operator_user_kwargs_with_local_iib_path,
-):
-    _operators_list = _prepare_operators_from_iib_json(
-        operators=[base_operator_dict],
-        install=True,
-        user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
-    )
-
-    assert _operators_list[0]["iib_index_image"] is None
-
-
-@pytest.mark.parametrize(
-    "cluster_version, base_iib_dict",
-    [
-        pytest.param(
-            "9.9.9",
+            {"iib_json": True, "cluster_version": Version.parse("1.2.3")},
             True,
         ),
     ],
     indirect=True,
 )
 def test_prepare_operator_with_iib_from_json_no_ocp_match(
-    cluster_version,
-    cluster_version_major_minor,
+    request,
     base_iib_dict,
-    _prepare_operators_from_iib_json,
     base_operator_dict,
     job_name_as_environment_variable,
     prepare_operator_user_kwargs_with_local_iib_path,
 ):
+    cluster_version_major_minor = cluster_version_major_minor_str(
+        cluster_version=request.node.callspec.params["mocked_prepare_operators"]["cluster_version"]
+    )
     with pytest.raises(
         ValueError,
         match=f".*Missing {cluster_version_major_minor} / {job_name_as_environment_variable}.*",
     ):
-        _prepare_operators_from_iib_json(
+        prepare_operators(
             operators=[base_operator_dict],
             install=True,
             user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
         )
 
 
-@pytest.mark.parametrize(
-    "cluster_version, base_iib_dict",
-    [
-        pytest.param(
-            "4.15.0",
-            True,
-        ),
-    ],
-    indirect=True,
-)
-def test_prepare_operator_with_iib_from_json_no_job_match(
-    cluster_version,
-    cluster_version_major_minor,
-    base_iib_dict,
-    _prepare_operators_from_iib_json,
-    base_operator_dict,
-    prepare_operator_user_kwargs_with_local_iib_path,
-):
-    missing_job_name = "4_16_job"
-    os.environ["PARENT_JOB_NAME"] = missing_job_name
-    with pytest.raises(
-        ValueError,
-        match=f".*Missing {cluster_version_major_minor} / {missing_job_name}.*",
-    ):
-        _prepare_operators_from_iib_json(
-            operators=[base_operator_dict],
-            install=True,
-            user_kwargs_dict=prepare_operator_user_kwargs_with_local_iib_path,
-        )
+@pytest.mark.parametrize("base_iib_dict", [True], indirect=True)
+class TestPrepareOperatorFromConfig:
+    def test_prepare_operator_with_iib_from_config(self, operator_dict_with_iib):
+        _operators_list = prepare_operators(operators=[operator_dict_with_iib], install=True, user_kwargs_dict={})
+        assert _operators_list[0]["iib_index_image"] == operator_dict_with_iib["iib_index_image"]
 
-
-def test_prepare_operator_with_iib_from_config(_prepare_operators_from_config, operator_dict_with_iib):
-    _operators_list = _prepare_operators_from_config(
-        operators=[operator_dict_with_iib], install=True, user_kwargs_dict={}
-    )
-    assert _operators_list[0]["iib_index_image"] == operator_dict_with_iib["iib_index_image"]
-
-
-def test_prepare_operator_without_iib_from_config(_prepare_operators_from_config, base_operator_dict):
-    _operators_list = _prepare_operators_from_config(operators=[base_operator_dict], install=True, user_kwargs_dict={})
-    assert _operators_list[0]["iib_index_image"] is None
+    def test_prepare_operator_without_iib_from_config(self, base_operator_dict):
+        _operators_list = prepare_operators(operators=[base_operator_dict], install=True, user_kwargs_dict={})
+        assert _operators_list[0]["iib_index_image"] is None
