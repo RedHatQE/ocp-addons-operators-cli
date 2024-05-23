@@ -1062,12 +1062,12 @@ timeout-sampler = ">=0.0.2"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "5.0.44"
+version = "5.0.46"
 description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_utilities-5.0.44.tar.gz", hash = "sha256:d97b8904f11847fc68d9f3582e0e959288ff34b1085b38ad6ea8c176eb54e47b"},
+    {file = "openshift_python_utilities-5.0.46.tar.gz", hash = "sha256:b3a1565ebf142f89d127283c4ad6693a9460d074adb472feb1bb6e537a824cef"},
 ]
 
 [package.dependencies]
@@ -1075,7 +1075,7 @@ beautifulsoup4 = ">=4.12.3,<5.0.0"
 colorlog = ">=6.7.0,<7.0.0"
 openshift-python-wrapper = ">=10.0.4"
 openshift-python-wrapper-data-collector = ">=1.0.4"
-pyhelper-utils = ">=0.0.20,<0.0.21"
+pyhelper-utils = ">=0.0.21,<0.0.22"
 python-simple-logger = ">=1.0.5"
 pyyaml = ">=6.0.1,<7.0.0"
 requests = ">=2.31.0,<3.0.0"
@@ -1362,12 +1362,12 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyhelper-utils"
-version = "0.0.20"
+version = "0.0.21"
 description = "Collective utility functions for python projects"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pyhelper_utils-0.0.20.tar.gz", hash = "sha256:70d372487f7c2e14e8a6b6866b566f47100b4287ad9c7e287eaa6091ff87a219"},
+    {file = "pyhelper_utils-0.0.21.tar.gz", hash = "sha256:4a8a0dbcbb4145851c43d28953e6dc6b51644bd72b2411c343fbf6fe40ae9e0b"},
 ]
 
 [package.dependencies]
