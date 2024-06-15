@@ -1052,12 +1052,12 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.118"
+version = "1.0.119"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.118.tar.gz", hash = "sha256:f63e31a3d17b4820d64dd2b7006746fe1fba41f8c810e01179883fc9b2afff18"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.119.tar.gz", hash = "sha256:0b01e7e04e577140b304ac3be19dc7afc33411ec769f88224ab65cca4a8aa935"},
 ]
 
 [package.dependencies]
@@ -1076,12 +1076,12 @@ timeout-sampler = ">=0.0.2"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "5.0.51"
+version = "5.0.54"
 description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_utilities-5.0.51.tar.gz", hash = "sha256:11b911e63c7e42ba50dd69c3db04c5c70453e0c6828a0b8b47adbda9f8bfd055"},
+    {file = "openshift_python_utilities-5.0.54.tar.gz", hash = "sha256:bea383c5d3c6903f29bd5ea636bf14a4668fe599835926e59ad89743c252231f"},
 ]
 
 [package.dependencies]
@@ -1090,7 +1090,7 @@ colorlog = ">=6.7.0,<7.0.0"
 deprecation = ">=2.1.0,<3.0.0"
 openshift-python-wrapper = ">=10.0.4"
 openshift-python-wrapper-data-collector = ">=1.0.4"
-pyhelper-utils = ">=0.0.22,<0.0.23"
+pyhelper-utils = ">=0.0.22"
 python-simple-logger = ">=1.0.5"
 pyyaml = ">=6.0.1,<7.0.0"
 requests = ">=2.31.0,<3.0.0"
@@ -1099,12 +1099,12 @@ timeout-sampler = ">=0.0.17"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "10.0.58"
+version = "10.0.59"
 description = "Wrapper around https://github.com/kubernetes-client/python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_wrapper-10.0.58.tar.gz", hash = "sha256:5eb480816832779e6d9f23d9f08e43051844493cb87d916f6e9c36895391253b"},
+    {file = "openshift_python_wrapper-10.0.59.tar.gz", hash = "sha256:931d2154ec9fdac6c7675771e5ddfacb68687a16a516cfb31cd64654d4f75a7e"},
 ]
 
 [package.dependencies]
