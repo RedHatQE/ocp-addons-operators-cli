@@ -1052,12 +1052,12 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.120"
+version = "1.0.122"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.120.tar.gz", hash = "sha256:783be12bc9c9a72809c952332aa2e013a23627e5cea70ecdf13208b879323fb9"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.122.tar.gz", hash = "sha256:4e16cc6156cbe930086241ef4c3f10da1292274f5698f9a1fffa837c07c5164c"},
 ]
 
 [package.dependencies]
@@ -1099,12 +1099,12 @@ timeout-sampler = ">=0.0.17"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "10.0.62"
+version = "10.0.63"
 description = "Wrapper around https://github.com/kubernetes-client/python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_wrapper-10.0.62.tar.gz", hash = "sha256:46c0d3e8befa5a2891bafaad26ab9352cee1a8fb50009eb5db433a12bb901e84"},
+    {file = "openshift_python_wrapper-10.0.63.tar.gz", hash = "sha256:65c5d400a9d4a7e4513f847d0874cc329d21d6039b6c15ea65f53594c5c6e02b"},
 ]
 
 [package.dependencies]
