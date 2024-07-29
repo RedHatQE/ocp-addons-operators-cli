@@ -1052,12 +1052,12 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.126"
+version = "1.0.127"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.126.tar.gz", hash = "sha256:640d7bee667b7971d3b5fe0d9d9a5d5101e7d4720e9cc0676d2c2a07036664a5"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.127.tar.gz", hash = "sha256:a905c984b56b56ebf0702416f76cf663f0dd6f4b937361d8cb418f8a2028c73d"},
 ]
 
 [package.dependencies]
@@ -1099,12 +1099,12 @@ timeout-sampler = ">=0.0.17"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "10.0.67"
+version = "10.0.69"
 description = "Wrapper around https://github.com/kubernetes-client/python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "openshift_python_wrapper-10.0.67.tar.gz", hash = "sha256:21a851f41b8ce40aa7d4e8c5fc43bab6c682e9e801c2a8c01cd0111ff62f55d2"},
+    {file = "openshift_python_wrapper-10.0.69.tar.gz", hash = "sha256:60229ce68fb14df4587152f7ae4b68b1222048403e0713adcf003e5475b85357"},
 ]
 
 [package.dependencies]
@@ -1113,9 +1113,10 @@ colorlog = ">=6.7.0,<7.0.0"
 jinja2 = ">=3.1.2,<4.0.0"
 kubernetes = ">=30.0.0,<31.0.0"
 packaging = ">=23.1,<24.0"
-pyhelper-utils = ">=0.0.28,<0.0.29"
+pyhelper-utils = ">=0.0.30,<0.0.31"
 python-benedict = ">=0.33.0,<0.34.0"
 python-simple-logger = ">=1.0.6"
+rich = ">=13.7.1,<14.0.0"
 ruff = ">=0.5.3,<0.6.0"
 timeout-sampler = ">=0.0.17"
 xmltodict = ">=0.13.0,<0.14.0"
@@ -1380,12 +1381,12 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyhelper-utils"
-version = "0.0.28"
+version = "0.0.30"
 description = "Collective utility functions for python projects"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pyhelper_utils-0.0.28.tar.gz", hash = "sha256:82f4725b8e2e5ce7856a2a2a409f40def66acd12394de21131db2af56af1a8d7"},
+    {file = "pyhelper_utils-0.0.30.tar.gz", hash = "sha256:16279389fe869080b2418e387ca0ea91144732f2543a987a4b0d76281bca1700"},
 ]
 
 [package.dependencies]
@@ -1563,12 +1564,12 @@ six = "*"
 
 [[package]]
 name = "python-simple-logger"
-version = "1.0.33"
+version = "1.0.34"
 description = "A simple logger for python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "python_simple_logger-1.0.33.tar.gz", hash = "sha256:fa34931dd16a16972a327c140fc6f0f0549915e58952994a5a2cad73c4f70423"},
+    {file = "python_simple_logger-1.0.34.tar.gz", hash = "sha256:66d00ee02b07e41e7b0c4349ffa63fdf0d01caf68f1f71d302e5e13968de62a4"},
 ]
 
 [package.dependencies]
