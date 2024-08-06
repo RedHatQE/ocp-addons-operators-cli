@@ -84,7 +84,7 @@ def get_cluster_name_from_kubeconfig(kubeconfig, operator_name):
         LOGGER.error(f"Operator: {operator_name} kubeconfig file contains more than one cluster.")
         raise click.Abort()
 
-    return kubeconfig_clusters[0]["name"]
+    return kubeconfig_clusters[0]["name"].split(":")[0]
 
 
 def get_operator_iib_from_iib_dict(iib_dict, operator_dict, job_name=None):
