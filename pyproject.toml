@@ -2,7 +2,7 @@
 omit = ["ocp_addons_operators_cli/tests/*", "ocp_addons_operators_cli/cli.py"]
 
 [tool.coverage.report]
-fail_under = 20 # TODO: Need to be at least 60
+fail_under = 20   # TODO: Need to be at least 60
 skip_empty = true
 
 [tool.coverage.html]
@@ -34,7 +34,7 @@ repository = "https://github.com/RedHatQE/ocp-addons-operators-cli"
 cli = "app.cli:main"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 openshift-cluster-management-python-wrapper = "^1.0.21"
 colorlog = "^6.7.0"
 openshift-python-wrapper = "^10.0.0"
