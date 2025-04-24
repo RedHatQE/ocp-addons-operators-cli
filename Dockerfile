@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.13
 
 # Install the Rosa CLI
 RUN curl -L https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-linux.tar.gz --output /tmp/rosa-linux.tar.gz \
