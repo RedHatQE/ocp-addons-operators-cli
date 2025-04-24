@@ -15,13 +15,13 @@ Clone the [repository](https://github.com/RedHatQE/ocp-addons-operators-cli.git)
 git clone https://github.com/RedHatQE/ocp-addons-operators-cli.git
 ```
 
-Install [poetry](https://github.com/python-poetry/poetry)
+Install [uv](https://github.com/astral-sh/uv)
 
-Use `poetry run python ocp_addons_operators_cli/cli.py` to execute the cli.
+Use `uv run ocp_addons_operators_cli/cli.py` to execute the cli.
 
 ```
-poetry install
-poetry run python ocp_addons_operators_cli/cli.py --help
+uv sync
+uv ocp_addons_operators_cli/cli.py --help
 ```
 
 ### Usages
@@ -32,7 +32,7 @@ User can install/uninstall addons and/or operators by sending YAML file instead 
 Example YAML file can be found [here](ocp_addons_operators_cli/manifests/addons-operators.yaml.example)
 pass `--yaml-config-file=.local/addons-operators.yaml` to use YAML file.
 Action also can be passed to the CLI as `--action install/uninstall` instead of specifying the action in the YAML file.
-`poetry run python ocp_addons_operators_cli/cli.py --action install --yaml-config-file addons-operators.yaml`
+`uv run ocp_addons_operators_cli/cli.py --action install --yaml-config-file addons-operators.yaml`
 
 ```
 podman run quay.io/redhat_msi/ocp-addons-operators-cli --help
