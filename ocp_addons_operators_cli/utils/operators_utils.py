@@ -10,6 +10,7 @@ from simple_logger.logger import get_logger
 from ocp_addons_operators_cli.constants import TIMEOUT_60MIN
 from ocp_addons_operators_cli.utils.general import (
     get_operator_iib,
+    get_operators_iibs_config_from_json,
     tts,
 )
 
@@ -122,18 +123,18 @@ def prepare_operators(operators, install, user_kwargs_dict):
     iib_dict = None
     job_name = None
 
-    # if install:
-    #     s3_bucket_operators_latest_iib_path = user_kwargs_dict.get("s3_bucket_operators_latest_iib_path")
-    #     local_operators_latest_iib_path = user_kwargs_dict.get("local_operators_latest_iib_path")
-    #
-    #     if s3_bucket_operators_latest_iib_path or local_operators_latest_iib_path:
-    #         iib_dict = get_operators_iibs_config_from_json(
-    #             s3_bucket_operators_latest_iib_path=s3_bucket_operators_latest_iib_path,
-    #             aws_region=user_kwargs_dict.get("aws_region"),
-    #             local_operators_latest_iib_path=local_operators_latest_iib_path,
-    #         )
-    #
-    #         job_name = os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
+    if install:
+        s3_bucket_operators_latest_iib_path = user_kwargs_dict.get("s3_bucket_operators_latest_iib_path")
+        local_operators_latest_iib_path = user_kwargs_dict.get("local_operators_latest_iib_path")
+
+        if s3_bucket_operators_latest_iib_path or local_operators_latest_iib_path:
+            iib_dict = get_operators_iibs_config_from_json(
+                s3_bucket_operators_latest_iib_path=s3_bucket_operators_latest_iib_path,
+                aws_region=user_kwargs_dict.get("aws_region"),
+                local_operators_latest_iib_path=local_operators_latest_iib_path,
+            )
+
+            job_name = os.environ.get("PARENT_JOB_NAME", os.environ.get("JOB_NAME"))
 
     for operator in operators:
         kubeconfig = operator["kubeconfig"]
@@ -151,7 +152,6 @@ def prepare_operators(operators, install, user_kwargs_dict):
             operator["iib_index_image"] = get_operator_iib_from_iib_dict(
                 iib_dict=iib_dict, job_name=job_name, operator_dict=operator
             )
-            operator["iib_index_image"] = "brew.registry.redhat.io/rh-osbs/iib:827776"
 
     return operators
 
