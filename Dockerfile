@@ -15,20 +15,19 @@ RUN curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/sta
   && chmod +x /usr/bin/oc \
   && chmod +x /usr/bin/kubectl
 
-COPY pyproject.toml poetry.lock README.md /ocp-addons-operators-cli/
+COPY pyproject.toml uv.lock README.md /ocp-addons-operators-cli/
 COPY ocp_addons_operators_cli /ocp-addons-operators-cli/ocp_addons_operators_cli/
 
 WORKDIR /ocp-addons-operators-cli
 
-ENV POETRY_HOME=/ocp-addons-operators-cli
+ENV UV_PYTHON=python3.13
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_NO_SYNC=1
+ENV UV_CACHE_DIR=${APP_DIR}/.cache
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/bin/
 ENV PATH="/ocp-addons-operators-cli/bin:$PATH"
 
-RUN python3 -m pip install pip --upgrade \
-  && python3 -m pip install poetry \
-  && poetry config cache-dir /ocp-addons-operators-cli \
-  && poetry config virtualenvs.in-project true \
-  && poetry config installer.max-workers 10 \
-  && poetry config --list \
-  && poetry install
+RUN uv sync
 
-ENTRYPOINT ["poetry", "run", "python", "ocp_addons_operators_cli/cli.py"]
+ENTRYPOINT ["uv", "run", "ocp_addons_operators_cli/cli.py"]
