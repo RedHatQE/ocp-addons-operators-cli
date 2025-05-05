@@ -1,60 +1,51 @@
 [project]
 name = "ocp-addons-operators-cli"
-version = "1.0.9"
+version = "1.0.10"
 description = "CLI to install/uninstall Addons/operators on Openshift clusters."
-authors = [
-    { name = "Meni Yakove", email = "myakove@gmail.com" },
-    { name = "Ruth Netser", email = "ruth.netser@gmail.com" },
-]
 requires-python = "~=3.9"
 readme = "README.md"
 dependencies = [
-    "openshift-cluster-management-python-wrapper>=2.0.16,<3",
-    "colorlog>=6.7.0,<7",
-    "openshift-python-wrapper>=11.0.47,<12",
-    "openshift-python-utilities>=6.0.10,<7",
-    "click>=8.1.4,<9",
-    "pyaml-env>=1.2.1,<2",
-    "python-simple-logger>=2.0.9,<3",
+  "openshift-cluster-management-python-wrapper>=2.0.16,<3",
+  "colorlog>=6.7.0,<7",
+  "openshift-python-wrapper>=11.0.47,<12",
+  "openshift-python-utilities>=6.0.10,<7",
+  "click>=8.1.4,<9",
+  "pyaml-env>=1.2.1,<2",
+  "python-simple-logger>=2.0.9,<3"
 ]
 
-[project.urls]
-Repository = "https://github.com/RedHatQE/ocp-addons-operators-cli"
+  [[project.authors]]
+  name = "Meni Yakove"
+  email = "myakove@gmail.com"
 
-[project.scripts]
-cli = "app.cli:main"
+  [[project.authors]]
+  name = "Ruth Netser"
+  email = "ruth.netser@gmail.com"
+
+  [project.urls]
+  Repository = "https://github.com/RedHatQE/ocp-addons-operators-cli"
+
+  [project.scripts]
+  cli = "app.cli:main"
 
 [tool.coverage.run]
-omit = ["ocp_addons_operators_cli/tests/*", "ocp_addons_operators_cli/cli.py"]
-
-[dependency-groups]
-dev = [
-    "ipython",
-    "ipdb",
-]
-tests = [
-    "pytest-mock>=3.14.0,<4",
-    "pytest-cov>=6.1.1,<7",
+omit = [
+  "ocp_addons_operators_cli/tests/*",
+  "ocp_addons_operators_cli/cli.py"
 ]
 
 [tool.coverage.report]
-fail_under = 20   # TODO: Need to be at least 60
+fail_under = 20
 skip_empty = true
 
 [tool.coverage.html]
 directory = ".tests_coverage"
 
 [tool.hatch.build.targets.sdist]
-include = [
-    "ocp_addons_operators_cli",
-    "manifests/*",
-]
+include = [ "ocp_addons_operators_cli", "manifests/*" ]
 
 [tool.hatch.build.targets.wheel]
-include = [
-    "ocp_addons_operators_cli",
-    "manifests/*",
-]
+include = [ "ocp_addons_operators_cli", "manifests/*" ]
 
 [tool.ruff]
 preview = true
@@ -62,8 +53,12 @@ line-length = 120
 fix = true
 output-format = "grouped"
 
-[tool.ruff.format]
-exclude = [".git", ".venv", ".mypy_cache", ".tox", "__pycache__"]
+  [tool.ruff.format]
+  exclude = [ ".git", ".venv", ".mypy_cache", ".tox", "__pycache__" ]
+
+[dependency-groups]
+dev = [ "ipython", "ipdb" ]
+tests = [ "pytest-mock>=3.14.0,<4", "pytest-cov>=6.1.1,<7" ]
 
 [build-system]
 requires = [ "hatchling" ]
