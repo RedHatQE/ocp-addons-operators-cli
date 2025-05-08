@@ -1116,7 +1116,7 @@ wheels = [
 
 [[package]]
 name = "ocp-addons-operators-cli"
-version = "1.0.10"
+version = "1.0.11"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
