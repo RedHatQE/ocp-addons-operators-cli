@@ -29,5 +29,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/bin/
 ENV PATH="/ocp-addons-operators-cli/bin:$PATH"
 
 RUN uv sync
+RUN chgrp -R 0 ${APP_DIR}/.cache && \
+    chmod -R g=u ${APP_DIR}/.cache
 
 ENTRYPOINT ["uv", "run", "ocp_addons_operators_cli/cli.py"]
