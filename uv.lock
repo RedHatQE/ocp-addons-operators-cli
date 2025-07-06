@@ -1144,7 +1144,7 @@ wheels = [
 
 [[package]]
 name = "ocp-addons-operators-cli"
-version = "1.0.11"
+version = "1.0.12"
 source = { editable = "." }
 dependencies = [
     { name = "click", version = "8.1.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
