@@ -1,6 +1,6 @@
 [project]
 name = "ocp-addons-operators-cli"
-version = "1.0.12"
+version = "1.0.13"
 description = "CLI to install/uninstall Addons/operators on Openshift clusters."
 requires-python = "~=3.9"
 readme = "README.md"
