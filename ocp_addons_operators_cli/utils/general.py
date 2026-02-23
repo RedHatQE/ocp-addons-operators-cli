@@ -6,7 +6,6 @@ import tempfile
 from clouds.aws.session_clients import s3_client
 from simple_logger.logger import get_logger
 
-
 LOGGER = get_logger(name=__name__)
 
 

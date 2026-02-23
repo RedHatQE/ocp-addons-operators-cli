@@ -79,10 +79,7 @@ def assert_invalid_ocm_env(addons):
     addons_wrong_env = {
         addon["name"]: ocm_env
         for addon in addons
-        if (
-            (ocm_env := addon.get("ocm-env"))  # noqa
-            and ocm_env not in supported_envs  # noqa
-        )
+        if ((ocm_env := addon.get("ocm-env")) and ocm_env not in supported_envs)
     }
 
     if addons_wrong_env:

@@ -26,7 +26,7 @@ class DuplicateFilter(logging.Filter):
 
 
 class WrapperLogFormatter(ColoredFormatter):
-    def formatTime(self, record, datefmt=None):  # noqa: N802
+    def formatTime(self, record, datefmt=None):
         return datetime.fromtimestamp(record.created).isoformat()
 
 
