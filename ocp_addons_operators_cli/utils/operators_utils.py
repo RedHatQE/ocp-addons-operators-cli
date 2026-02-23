@@ -2,9 +2,9 @@ import os
 
 import click
 import yaml
+from ocp_utilities.cluster_versions import get_cluster_version
 from ocp_utilities.infra import get_client
 from ocp_utilities.operators import install_operator, uninstall_operator
-from ocp_utilities.cluster_versions import get_cluster_version
 from simple_logger.logger import get_logger
 
 from ocp_addons_operators_cli.constants import TIMEOUT_60MIN

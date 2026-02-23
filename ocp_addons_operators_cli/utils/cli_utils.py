@@ -45,14 +45,15 @@ def assert_operators_iib_configuration(kwargs):
             )
             raise click.Abort()
 
-        if s3_bucket_operators_latest_iib_path:
-            if missing_configs := [
+        if s3_bucket_operators_latest_iib_path and (
+            missing_configs := [
                 conf
                 for conf in ("aws_access_key_id", "aws_region", "aws_secret_access_key")
                 if conf not in kwargs or kwargs[conf] is None
-            ]:
-                LOGGER.error(f"Missing AWS configurations: {missing_configs}")
-                raise click.Abort()
+            ]
+        ):
+            LOGGER.error(f"Missing AWS configurations: {missing_configs}")
+            raise click.Abort()
 
 
 def verify_user_input(**kwargs):

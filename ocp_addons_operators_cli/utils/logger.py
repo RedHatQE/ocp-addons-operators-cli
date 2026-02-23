@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from colorlog import ColoredFormatter
 
@@ -26,8 +26,8 @@ class DuplicateFilter(logging.Filter):
 
 
 class WrapperLogFormatter(ColoredFormatter):
-    def formatTime(self, record, datefmt=None):  # noqa: N802
-        return datetime.fromtimestamp(record.created).isoformat()
+    def formatTime(self, record, datefmt=None):
+        return datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat()
 
 
 def get_logger(name):

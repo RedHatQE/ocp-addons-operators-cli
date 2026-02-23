@@ -6,7 +6,6 @@ import tempfile
 from clouds.aws.session_clients import s3_client
 from simple_logger.logger import get_logger
 
-
 LOGGER = get_logger(name=__name__)
 
 
@@ -35,7 +34,8 @@ def get_operators_iibs_config_from_json(
         bucket, key = s3_bucket_operators_latest_iib_path.split("/", 1)
         client = s3_client(region_name=aws_region)
 
-        target_file_path = tempfile.NamedTemporaryFile(suffix="operators_latest_iib.json").name
+        with tempfile.NamedTemporaryFile(suffix="operators_latest_iib.json", delete=False) as tmp:
+            target_file_path = tmp.name
 
         LOGGER.info(f"Downloading {key} from {bucket} to {target_file_path}")
         client.download_file(Bucket=bucket, Key=key, Filename=target_file_path)

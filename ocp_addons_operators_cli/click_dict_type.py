@@ -67,7 +67,6 @@ class DictParamType(click.ParamType):
                     result_dict[key] = converted_values[:-1]
                 else:
                     result_dict[key] = converted_values
-            return result_dict
         except ValueError:
             self.fail(
                 "All key-value pairs must be separated by one semicolon. "
@@ -77,3 +76,5 @@ class DictParamType(click.ParamType):
                 param,
                 ctx,
             )
+        else:
+            return result_dict

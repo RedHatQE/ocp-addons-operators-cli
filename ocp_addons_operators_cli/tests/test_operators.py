@@ -6,7 +6,6 @@ from semver import Version
 
 from ocp_addons_operators_cli.utils.operators_utils import prepare_operators
 
-
 pytestmark = pytest.mark.usefixtures("mocked_prepare_operators")
 
 
