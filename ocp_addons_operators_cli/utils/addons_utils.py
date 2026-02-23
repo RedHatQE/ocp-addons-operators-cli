@@ -92,7 +92,7 @@ def assert_missing_managed_odh_brew_token(addons, brew_token):
     LOGGER.info(
         f"Verify `brew token` is not missing from user input for addon `{managed_odh_str}` installation in {STAGE_STR}."
     )
-    if any([addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR for addon in addons]) and not brew_token:
+    if any(addon["name"] == managed_odh_str and addon["ocm-env"] == STAGE_STR for addon in addons) and not brew_token:
         LOGGER.error(f"{managed_odh_str} addon on {STAGE_STR} requires brew token. Pass `--brew-token`")
         raise click.Abort()
 
@@ -106,11 +106,9 @@ def assert_addons_user_input(addons, brew_token):
 
 
 def write_kubeconfig_file(cluster):
-    kubeconfig_path = tempfile.NamedTemporaryFile(prefix=f"kubeconfig-{cluster.name}").name
-    with open(kubeconfig_path, "w") as fd:
+    with tempfile.NamedTemporaryFile(prefix=f"kubeconfig-{cluster.name}", delete=False, mode="w") as fd:
         fd.write(yaml.dump(cluster.kubeconfig))
-
-    return kubeconfig_path
+        return fd.name
 
 
 def prepare_addons(addons, ocm_token, endpoint, brew_token, install, must_gather_output_dir):

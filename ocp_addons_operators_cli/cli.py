@@ -206,7 +206,7 @@ if __name__ == "__main__":
     _logger = get_logger(name="main-openshift-cli-installer")
     try:
         main()
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
         import traceback
 
         ipdb = __import__("ipdb")  # Bypass debug-statements pre-commit hook
